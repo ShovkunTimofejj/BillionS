@@ -1,0 +1,87 @@
+CREATE TABLE UserEntity (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    nickname TEXT NOT NULL,
+    avatar TEXT,
+    units TEXT NOT NULL,          -- Metric / Imperial
+    timezone TEXT NOT NULL,
+    subscription TEXT NOT NULL    -- Free / Premium
+);
+
+-- Таблица активностей
+CREATE TABLE ActivitySampleEntity (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    date TEXT NOT NULL,
+    steps INTEGER NOT NULL,
+    distanceMeters REAL NOT NULL,
+    activeEnergyKcal REAL NOT NULL,
+    source TEXT NOT NULL          -- manual / device / api
+);
+
+-- Таблица сводок по дням
+CREATE TABLE DailySummaryEntity (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    date TEXT NOT NULL,
+    steps INTEGER NOT NULL,
+    distanceMeters REAL NOT NULL,
+    kcal REAL NOT NULL,
+    moveMinutes INTEGER NOT NULL,
+    rings TEXT NOT NULL,
+    streak INTEGER NOT NULL
+);
+
+-- Глобальный счётчик
+CREATE TABLE GlobalCounterEntity (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    totalSteps INTEGER NOT NULL,
+    totalDistance REAL NOT NULL,
+    totalKcal REAL NOT NULL,
+    lastUpdate TEXT NOT NULL
+);
+
+-- Таблица челленджей
+CREATE TABLE ChallengeEntity (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    type TEXT NOT NULL,
+    status TEXT NOT NULL,
+    progress REAL NOT NULL
+);
+
+-- Таблица тем
+CREATE TABLE ThemeEntity (
+    id TEXT NOT NULL PRIMARY KEY,
+    name TEXT NOT NULL,
+    isPurchased INTEGER NOT NULL
+);
+
+
+getUser:
+SELECT * FROM UserEntity LIMIT 1;
+
+insertUser:
+INSERT INTO UserEntity(nickname, avatar, units, timezone, subscription)
+VALUES (?, ?, ?, ?, ?);
+
+clearUser:
+DELETE FROM UserEntity;
+
+getActivityByDate:
+SELECT * FROM ActivitySampleEntity WHERE date LIKE ?;
+
+insertActivity:
+INSERT INTO ActivitySampleEntity(date, steps, distanceMeters, activeEnergyKcal, source)
+VALUES (?, ?, ?, ?, ?);
+
+getChallenges:
+SELECT * FROM ChallengeEntity;
+
+insertChallenge:
+INSERT INTO ChallengeEntity(type, status, progress) VALUES (?, ?, ?);
+
+getThemes:
+SELECT * FROM ThemeEntity;
+
+insertTheme:
+INSERT OR REPLACE INTO ThemeEntity(id, name, isPurchased)
+VALUES (?, ?, ?);
+
+

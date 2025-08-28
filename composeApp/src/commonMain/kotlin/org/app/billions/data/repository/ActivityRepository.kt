@@ -1,0 +1,13 @@
+package org.app.billions.data.repository
+
+import app.cash.sqldelight.db.QueryResult
+import org.app.billions.data.model.ActivitySample
+import org.app.billions.data.model.DailySummary
+import org.app.billions.data.model.GlobalCounter
+
+interface ActivityRepository {
+    suspend fun addSample(sample: ActivitySample): QueryResult<Long>
+    suspend fun getSamplesByDate(date: String): List<ActivitySample>
+    suspend fun getDailySummary(date: String): DailySummary?
+    suspend fun getGlobalCounter(): GlobalCounter
+}
