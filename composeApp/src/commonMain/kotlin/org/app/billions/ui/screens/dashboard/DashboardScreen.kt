@@ -34,11 +34,22 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Flag
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import org.app.billions.ui.screens.Screen
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DashboardScreen(navController: NavHostController) {
     val Lime = Color(0xFF00FF00)
+    var selectedTabIndex by remember { mutableStateOf(0) } // 0 - Dashboard, 1 - Challenges, 2 - Settings
 
     Scaffold(
         topBar = {
@@ -59,9 +70,40 @@ fun DashboardScreen(navController: NavHostController) {
                 }
             )
         },
+        bottomBar = {
+            NavigationBar(containerColor = Color(0xFF001F3F)) {
+                NavigationBarItem(
+                    selected = selectedTabIndex == 0,
+                    onClick = {
+                        selectedTabIndex = 0
+                        navController.navigate(Screen.MainMenuScreen.route) {
+                            popUpTo(Screen.MainMenuScreen.route) { inclusive = true }
+                        }
+                    },
+                    icon = { Icon(Icons.Default.Home, contentDescription = "Dashboard") },
+                    label = { Text("Home", color = Color.White) }
+                )
+                NavigationBarItem(
+                    selected = selectedTabIndex == 1,
+                    onClick = {
+                        selectedTabIndex = 1
+                        navController.navigate("challenges") {
+                            popUpTo(Screen.MainMenuScreen.route)
+                        }
+                    },
+                    icon = { Icon(Icons.Default.Flag, contentDescription = "Challenges") },
+                    label = { Text("Challenges", color = Color.White) }
+                )
+                NavigationBarItem(
+                    selected = selectedTabIndex == 2,
+                    onClick = { selectedTabIndex = 2 },
+                    icon = { Icon(Icons.Default.Settings, contentDescription = "Settings") },
+                    label = { Text("Settings", color = Color.White) }
+                )
+            }
+        },
         containerColor = Color(0xFF001F3F)
-    )
-    { paddingValues ->
+    ) { paddingValues ->
         Column(
             modifier = Modifier
                 .fillMaxSize()

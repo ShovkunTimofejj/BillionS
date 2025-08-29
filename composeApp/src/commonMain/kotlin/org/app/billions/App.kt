@@ -1,13 +1,17 @@
 package org.app.billions
 
 import androidx.compose.runtime.*
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import org.app.billions.ui.screens.Screen
+import org.app.billions.ui.screens.challenges.ChallengeDetailScreen
+import org.app.billions.ui.screens.challenges.ChallengesScreen
+import org.app.billions.ui.screens.challenges.RewardsGalleryScreen
 import org.app.billions.ui.screens.dashboard.DashboardScreen
 import org.app.billions.ui.screens.onboarding.OnboardingScreen
-
 import org.app.billions.ui.screens.splash.SplashScreen
 import org.app.billions.ui.screens.viewModel.SplashScreenViewModel
 import org.koin.compose.viewmodel.koinViewModel
@@ -33,8 +37,16 @@ fun App() {
             DashboardScreen(navController)
         }
 
-//        composable(Screen.MainMenuScreen.route) {
-//            MainMenuScreen(navController)
-//        }
+        composable(Screen.ChallengesScreen.route) {
+            ChallengesScreen(navController)
+        }
+
+        composable("challengeDetail") {
+            ChallengeDetailScreen(navController)
+        }
+
+        composable("rewards") {
+            RewardsGalleryScreen(navController)
+        }
     }
 }
