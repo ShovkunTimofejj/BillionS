@@ -61,7 +61,7 @@ class ChallengeRepositoryImpl(
         val from = now.minus(DatePeriod(days = 30))
         val samples = queries.getActivityBetween(from.toString(), now.toString()).executeAsList()
         val totalSteps = samples.sumOf { it.steps }
-        val goal = 300_000 // например, 300к шагов за 30 дней
+        val goal = 300_000
         return totalSteps.toDouble() / goal
     }
 
@@ -71,7 +71,7 @@ class ChallengeRepositoryImpl(
         val samplesByDay = queries.getActivityBetween(from.toString(), now.toString()).executeAsList()
             .groupBy { it.date.substring(0, 10) }
 
-        val goalPerDay = 10_000 // шагов в день
+        val goalPerDay = 10_000
         var streak = 0
         for (day in 0..6) {
             val date = from.plus(DatePeriod(days = day))
@@ -87,7 +87,7 @@ class ChallengeRepositoryImpl(
         val samplesByDay = queries.getActivityBetween(from.toString(), now.toString()).executeAsList()
             .groupBy { it.date.substring(0, 10) }
 
-        val minPerDay = 5000 // шагов
+        val minPerDay = 5000
         var successDays = 0
         var jokers = 2
         for (day in 0..13) {
