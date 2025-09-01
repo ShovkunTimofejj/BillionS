@@ -10,4 +10,9 @@ interface ActivityRepository {
     suspend fun getSamplesByDate(date: String): List<ActivitySample>
     suspend fun getDailySummary(date: String): DailySummary?
     suspend fun getGlobalCounter(): GlobalCounter
+    suspend fun getSamplesBetween(from: String, to: String): List<ActivitySample>
+    suspend fun getAllSamples(): List<ActivitySample>
+    suspend fun deleteSample(id: Long): QueryResult<Long>
+    suspend fun updateSample(sample: ActivitySample): QueryResult<Long>
+    suspend fun getSampleById(id: Long): ActivitySample?
 }

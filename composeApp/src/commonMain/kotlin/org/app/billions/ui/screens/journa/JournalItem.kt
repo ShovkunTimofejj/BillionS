@@ -33,110 +33,145 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.filled.ChevronRight
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.LocalFireDepartment
+import androidx.compose.material.icons.filled.Map
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
 import kotlin.math.abs
+import kotlin.math.pow
+import kotlin.math.round
 import kotlin.math.roundToInt
 
 @Composable
 fun JournalItem(
     entry: ActivitySample,
     onClick: () -> Unit,
+    onEdit: () -> Unit,
     onDelete: () -> Unit,
-    swipeThreshold: Float = 200f
+    swipeThreshold: Float = 140f
 ) {
     val scope = rememberCoroutineScope()
     val offsetX = remember { Animatable(0f) }
-    var dismissed by remember { mutableStateOf(false) }
 
-    if (!dismissed) {
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(Color.Transparent)
-                .pointerInput(Unit) {
-                    detectHorizontalDragGestures(
-                        onDragEnd = {
-                            scope.launch {
-                                if (offsetX.value < -swipeThreshold) {
-                                    offsetX.animateTo(
-                                        targetValue = -1000f,
-                                        animationSpec = tween(durationMillis = 300)
-                                    )
-                                    dismissed = true
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(Color.Transparent)
+            .pointerInput(Unit) {
+                detectHorizontalDragGestures(
+                    onDragEnd = {
+                        scope.launch {
+                            when {
+                                offsetX.value < -swipeThreshold -> {
+                                    offsetX.animateTo(-300f, tween(250))
                                     onDelete()
-                                } else {
-                                    offsetX.animateTo(
-                                        targetValue = 0f,
-                                        animationSpec = tween(durationMillis = 300)
-                                    )
+                                    offsetX.animateTo(0f, tween(200))
                                 }
-                            }
-                        },
-                        onHorizontalDrag = { _, dragAmount ->
-                            scope.launch {
-                                val newValue = (offsetX.value + dragAmount).coerceAtMost(0f)
-                                offsetX.snapTo(newValue)
+                                offsetX.value > swipeThreshold -> {
+                                    offsetX.animateTo(300f, tween(250))
+                                    onEdit()
+                                    offsetX.animateTo(0f, tween(200))
+                                }
+                                else -> offsetX.animateTo(0f, tween(200))
                             }
                         }
-                    )
-                }
-        ) {
+                    },
+                    onHorizontalDrag = { _, drag ->
+                        scope.launch {
+                            offsetX.snapTo((offsetX.value + drag).coerceIn(-300f, 300f))
+                        }
+                    }
+                )
+            }
+    ) {
+        Row(Modifier.matchParentSize()) {
             Box(
-                modifier = Modifier
-                    .matchParentSize()
+                Modifier
+                    .weight(1f)
+                    .fillMaxHeight()
+                    .background(Color(0xFF1976D2)),
+                contentAlignment = Alignment.CenterStart
+            ) {
+                Icon(
+                    Icons.Default.Edit,
+                    contentDescription = "Edit",
+                    tint = Color.White,
+                    modifier = Modifier.padding(start = 24.dp)
+                )
+            }
+            Box(
+                Modifier
+                    .weight(1f)
+                    .fillMaxHeight()
                     .background(Color(0xFFD32F2F)),
                 contentAlignment = Alignment.CenterEnd
             ) {
                 Icon(
-                    imageVector = Icons.Default.Delete,
+                    Icons.Default.Delete,
                     contentDescription = "Delete",
                     tint = Color.White,
                     modifier = Modifier.padding(end = 24.dp)
                 )
             }
+        }
 
-            Card(
-                shape = RoundedCornerShape(16.dp),
-                modifier = Modifier
-                    .offset { IntOffset(offsetX.value.roundToInt(), 0) }
-                    .fillMaxWidth()
-                    .padding(horizontal = 8.dp, vertical = 6.dp)
-                    .clickable(onClick = onClick),
-                elevation = CardDefaults.cardElevation(defaultElevation = 6.dp)
-            ) {
-                Row(
-                    modifier = Modifier.padding(16.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.DirectionsWalk,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.primary
-                    )
-                    Spacer(Modifier.width(12.dp))
-                    Column {
-                        Text(
-                            text = entry.date.toString(),
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                        Text(
-                            text = "${entry.steps} steps · ${entry.distanceMeters} m · ${entry.activeEnergyKcal} kcal",
-                            style = MaterialTheme.typography.bodyMedium
-                        )
-                        Text(
-                            text = entry.source,
-                            style = MaterialTheme.typography.bodySmall,
-                            color = Color.Gray
-                        )
-                    }
+        Card(
+            shape = RoundedCornerShape(16.dp),
+            modifier = Modifier
+                .offset { IntOffset(offsetX.value.roundToInt(), 0) }
+                .fillMaxWidth()
+                .padding(horizontal = 8.dp, vertical = 6.dp)
+                .clickable(onClick = onClick),
+            elevation = CardDefaults.cardElevation(defaultElevation = 6.dp)
+        ) {
+            Row(Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
+                val icon = when {
+                    entry.steps > 0 -> Icons.Default.DirectionsWalk
+                    entry.distanceMeters > 0 -> Icons.Default.Map
+                    else -> Icons.Default.LocalFireDepartment
                 }
+                Icon(icon, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
+                Spacer(Modifier.width(12.dp))
+                Column(Modifier.weight(1f)) {
+                    Text(
+                        entry.date.date.toString(),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Text(
+                        buildString {
+                            if (entry.steps > 0) append(entry.steps.asSteps())
+                            if (entry.distanceMeters > 0) append(" · ${entry.distanceMeters.asKm()}")
+                            if (entry.activeEnergyKcal > 0) append(" · ${entry.activeEnergyKcal.asKcal()}")
+                        },
+                        style = MaterialTheme.typography.bodyMedium,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                    Text(
+                        entry.source,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = Color.Gray
+                    )
+                }
+                Icon(Icons.Default.ChevronRight, contentDescription = null)
             }
         }
     }
 }
+
+fun Double.asKm(): String {
+    val km = this / 1000.0
+    val rounded = (km * 100).roundToInt() / 100.0
+    return "$rounded km"
+}
+
+fun Double.asKcal(): String = "${this.roundToInt()} kcal"
+fun Long.asSteps(): String = "$this steps"

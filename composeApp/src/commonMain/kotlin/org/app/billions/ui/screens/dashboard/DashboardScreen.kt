@@ -1,4 +1,4 @@
-package org.app.billions.ui.screens.dashboard  /* TODO: открыть AddEntry */
+package org.app.billions.ui.screens.dashboard
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background

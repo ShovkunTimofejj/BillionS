@@ -6,16 +6,18 @@ import kotlinx.datetime.Clock
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
+import org.app.billions.data.ActivitySampleEntity
 import org.app.billions.data.BillionS
 import org.app.billions.data.model.ActivitySample
 import org.app.billions.data.repository.ActivityRepository
 
 class ActivityRepositoryImpl(private val db: BillionS) : ActivityRepository {
 
-    val queries = db.billionSQueries
+    private val q = db.billionSQueries
+
 
     override suspend fun addSample(sample: ActivitySample) = withContext(Dispatchers.Default) {
-        queries.insertActivity(
+        q.insertActivity(
             date = sample.date.toString(),
             steps = sample.steps,
             distanceMeters = sample.distanceMeters,
@@ -25,16 +27,7 @@ class ActivityRepositoryImpl(private val db: BillionS) : ActivityRepository {
     }
 
     override suspend fun getSamplesByDate(date: String): List<ActivitySample> = withContext(Dispatchers.Default) {
-        queries.getActivityByDate("%$date%").executeAsList().map {
-            ActivitySample(
-                id = it.id,
-                date = LocalDateTime.parse(it.date),
-                steps = it.steps,
-                distanceMeters = it.distanceMeters,
-                activeEnergyKcal = it.activeEnergyKcal,
-                source = it.source
-            )
-        }
+        q.getActivityByDate("%$date%").executeAsList().map { it.toModel() }
     }
 
     override suspend fun getDailySummary(date: String) = null
@@ -43,4 +36,40 @@ class ActivityRepositoryImpl(private val db: BillionS) : ActivityRepository {
         org.app.billions.data.model.GlobalCounter(0, 0.0, 0.0, Clock.System.now().toLocalDateTime(
             TimeZone.currentSystemDefault()))
     }
+
+    override suspend fun getSamplesBetween(from: String, to: String): List<ActivitySample> = withContext(Dispatchers.Default) {
+        q.getActivityBetween(from, to).executeAsList().map { it.toModel() }
+    }
+
+    override suspend fun getAllSamples(): List<ActivitySample> = withContext(Dispatchers.Default) {
+        q.getAllActivity().executeAsList().map { it.toModel() }
+    }
+
+
+    override suspend fun deleteSample(id: Long) = withContext(Dispatchers.Default) {
+        q.deleteActivity(id)
+    }
+
+    override suspend fun updateSample(sample: ActivitySample) = withContext(Dispatchers.Default) {
+        q.updateActivity(
+            date = sample.date.toString(),
+            steps = sample.steps,
+            distanceMeters = sample.distanceMeters,
+            activeEnergyKcal = sample.activeEnergyKcal,
+            source = sample.source,
+            id = sample.id
+        )
+    }
+    override suspend fun getSampleById(id: Long): ActivitySample? = withContext(Dispatchers.Default) {
+        q.getActivityById(id).executeAsOneOrNull()?.toModel()
+    }
 }
+
+private fun ActivitySampleEntity.toModel() = ActivitySample(
+    id = id,
+    date = LocalDateTime.parse(date),
+    steps = steps,
+    distanceMeters = distanceMeters,
+    activeEnergyKcal = activeEnergyKcal,
+    source = source
+)

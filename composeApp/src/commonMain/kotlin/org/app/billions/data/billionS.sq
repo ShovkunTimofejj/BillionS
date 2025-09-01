@@ -92,8 +92,23 @@ INSERT INTO ChallengeEntity(type, status, progress, goal, daysLeft, reward) VALU
 getThemes:
 SELECT * FROM ThemeEntity;
 
+getAllActivity:
+SELECT * FROM ActivitySampleEntity;
+
+deleteActivity:
+DELETE FROM ActivitySampleEntity WHERE id = ?;
+
+updateActivity:
+UPDATE ActivitySampleEntity
+SET date = ?, steps = ?, distanceMeters = ?, activeEnergyKcal = ?, source = ?
+WHERE id = ?;
+
+getActivityById:
+SELECT * FROM ActivitySampleEntity WHERE id = ?;
+
 insertTheme:
 INSERT OR REPLACE INTO ThemeEntity(id, name, isPurchased)
 VALUES (?, ?, ?);
+
 
 

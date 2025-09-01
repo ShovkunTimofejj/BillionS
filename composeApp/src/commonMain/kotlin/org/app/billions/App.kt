@@ -11,9 +11,11 @@ import org.app.billions.ui.screens.challenges.ChallengeDetailScreen
 import org.app.billions.ui.screens.challenges.ChallengesScreen
 import org.app.billions.ui.screens.challenges.RewardsGalleryScreen
 import org.app.billions.ui.screens.dashboard.DashboardScreen
+import org.app.billions.ui.screens.journa.EntryDetailScreen
 import org.app.billions.ui.screens.journa.JournalScreen
 import org.app.billions.ui.screens.onboarding.OnboardingScreen
 import org.app.billions.ui.screens.splash.SplashScreen
+import org.app.billions.ui.screens.viewModel.JournalViewModel
 import org.app.billions.ui.screens.viewModel.SplashScreenViewModel
 import org.koin.compose.viewmodel.koinViewModel
 
@@ -21,6 +23,7 @@ import org.koin.compose.viewmodel.koinViewModel
 fun App() {
     val navController = rememberNavController()
     val splashScreenViewModel: SplashScreenViewModel = koinViewModel()
+    val journalViewModel: JournalViewModel = koinViewModel()
 
     NavHost(
         navController = navController,
@@ -52,6 +55,10 @@ fun App() {
 
         composable(Screen.JournalScreen.route) {
             JournalScreen(navController)
+        }
+
+        composable("entryDetail") {
+            EntryDetailScreen(navController, journalViewModel)
         }
     }
 }
