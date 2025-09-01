@@ -12,6 +12,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Flag
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -85,6 +86,17 @@ fun ChallengesScreen(
                     onClick = { selectedTabIndex = 1 },
                     icon = { Icon(Icons.Default.Flag, contentDescription = "Challenges") },
                     label = { Text("Challenges", color = Color.White) }
+                )
+                NavigationBarItem(
+                    selected = selectedTabIndex == 2,
+                    onClick = {
+                        selectedTabIndex = 2
+                        navController.navigate(Screen.JournalScreen.route) {
+                            popUpTo(Screen.MainMenuScreen.route)
+                        }
+                    },
+                    icon = { Icon(Icons.Default.List, contentDescription = "Journal") },
+                    label = { Text("Journal", color = Color.White) }
                 )
                 NavigationBarItem(
                     selected = selectedTabIndex == 2,

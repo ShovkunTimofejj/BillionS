@@ -11,6 +11,7 @@ import org.app.billions.ui.screens.challenges.ChallengeDetailScreen
 import org.app.billions.ui.screens.challenges.ChallengesScreen
 import org.app.billions.ui.screens.challenges.RewardsGalleryScreen
 import org.app.billions.ui.screens.dashboard.DashboardScreen
+import org.app.billions.ui.screens.journa.JournalScreen
 import org.app.billions.ui.screens.onboarding.OnboardingScreen
 import org.app.billions.ui.screens.splash.SplashScreen
 import org.app.billions.ui.screens.viewModel.SplashScreenViewModel
@@ -47,6 +48,10 @@ fun App() {
 
         composable("rewards") {
             RewardsGalleryScreen(navController)
+        }
+
+        composable(Screen.JournalScreen.route) {
+            JournalScreen(navController)
         }
     }
 }

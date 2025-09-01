@@ -33,9 +33,11 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Flag
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -87,7 +89,7 @@ fun DashboardScreen(navController: NavHostController) {
                     selected = selectedTabIndex == 1,
                     onClick = {
                         selectedTabIndex = 1
-                        navController.navigate("challenges") {
+                        navController.navigate(Screen.ChallengesScreen.route) {
                             popUpTo(Screen.MainMenuScreen.route)
                         }
                     },
@@ -96,7 +98,18 @@ fun DashboardScreen(navController: NavHostController) {
                 )
                 NavigationBarItem(
                     selected = selectedTabIndex == 2,
-                    onClick = { selectedTabIndex = 2 },
+                    onClick = {
+                        selectedTabIndex = 2
+                        navController.navigate(Screen.JournalScreen.route) {
+                            popUpTo(Screen.MainMenuScreen.route)
+                        }
+                    },
+                    icon = { Icon(Icons.Default.List, contentDescription = "Journal") },
+                    label = { Text("Journal", color = Color.White) }
+                )
+                NavigationBarItem(
+                    selected = selectedTabIndex == 3,
+                    onClick = { selectedTabIndex = 3 },
                     icon = { Icon(Icons.Default.Settings, contentDescription = "Settings") },
                     label = { Text("Settings", color = Color.White) }
                 )
