@@ -87,7 +87,7 @@ SET type = ?, status = ?, progress = ?, goal = ?, daysLeft = ?, reward = ?
 WHERE id = ?;
 
 insertChallenge:
-INSERT INTO ChallengeEntity(type, status, progress, goal, daysLeft, reward) VALUES (?, ?, ?, ?, ?, ?);
+INSERT INTO ChallengeEntity(id, type, status, progress, goal, daysLeft, reward) VALUES (?, ?, ?, ?, ?, ?, ?);
 
 getThemes:
 SELECT * FROM ThemeEntity;

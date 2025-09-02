@@ -24,7 +24,8 @@ import org.app.billions.ui.screens.journa.MetricType
 class JournalViewModel(
     private val repo: ActivityRepository,
     private val effects: PlatformEffects,
-    private val share: PlatformShare
+    private val share: PlatformShare,
+    private val challengesViewModel: ChallengesViewModel
 ) : ViewModel() {
 
     private val viewModelJob = SupervisorJob()
@@ -101,25 +102,30 @@ class JournalViewModel(
                 _state.value = _state.value.copy(errorMessage = "Amount must be > 0")
                 return@launch
             }
-            if (entry.id == 0L) {
-                repo.addSample(entry)
-            } else {
-                repo.updateSample(entry)
+
+            scope.launch {
+                if (entry.id == 0L) {
+                    repo.addSample(entry)
+                } else {
+                    repo.updateSample(entry)
+                }
+
+                challengesViewModel.recalculateProgressForAllChallenges()
+
+                hideAddEntryDialog()
+                loadEntries(_state.value.filter)
+                effects.hapticSuccess()
+                _state.value = _state.value.copy(successEvent = true)
             }
-            hideAddEntryDialog()
-            loadEntries(_state.value.filter)
-            effects.hapticSuccess()
-            _state.value = _state.value.copy(successEvent = true)
         }
     }
-
     fun deleteEntry(id: Long) {
         scope.launch {
             repo.deleteSample(id)
+            challengesViewModel.recalculateProgressForAllChallenges()
             loadEntries(_state.value.filter)
         }
     }
-
     fun toggleFilterSheet() {
         _state.value = _state.value.copy(showFilterSheet = !_state.value.showFilterSheet)
     }

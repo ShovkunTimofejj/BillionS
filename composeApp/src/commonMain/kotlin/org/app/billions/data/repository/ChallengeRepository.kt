@@ -7,4 +7,6 @@ interface ChallengeRepository {
     suspend fun getChallenges(): List<Challenge>
     suspend fun updateChallenge(challenge: Challenge): QueryResult<Long>
     suspend fun calculateProgress(challenge: Challenge): Double
+    suspend fun initializeDefaultChallenges()
+
 }

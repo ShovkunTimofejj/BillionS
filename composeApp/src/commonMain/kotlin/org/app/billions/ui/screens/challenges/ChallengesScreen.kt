@@ -1,13 +1,21 @@
 package org.app.billions.ui.screens.challenges
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Flag
@@ -16,6 +24,7 @@ import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
@@ -28,11 +37,13 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
@@ -41,7 +52,9 @@ import androidx.navigation.NavHostController
 import kotlinx.coroutines.flow.combine
 import org.app.billions.data.model.Challenge
 import org.app.billions.data.model.ChallengeStatus
+import org.app.billions.data.model.RewardType
 import org.app.billions.ui.screens.Screen
+import org.app.billions.ui.screens.dashboard.RingView
 import org.app.billions.ui.screens.viewModel.ChallengesViewModel
 import org.koin.compose.viewmodel.koinViewModel
 
@@ -49,17 +62,18 @@ import org.koin.compose.viewmodel.koinViewModel
 @Composable
 fun ChallengesScreen(
     navController: NavHostController,
-    viewModel: ChallengesViewModel = koinViewModel()
+    viewModel: ChallengesViewModel
 ) {
     val selectedTab by viewModel.selectedTab.collectAsState()
-    val challenges by viewModel.challenges.collectAsState()
-    var selectedTabIndex by remember { mutableStateOf(1) } // 1 — Challenges
+    val filteredChallenges by viewModel.filteredChallenges.collectAsState()
+    LaunchedEffect(filteredChallenges) {
+        println("Filtered challenges for tab $selectedTab: ${filteredChallenges.size}")
+        filteredChallenges.forEach { println("Challenge: ${it.type}, progress: ${it.progress}") }
+    }
 
-    val filteredChallenges by viewModel.challenges
-        .combine(viewModel.selectedTab) { challenges, tab ->
-            challenges.filter { it.status == tab }
-        }
-        .collectAsState(initial = emptyList())
+    var selectedChallengeTabIndex by remember { mutableStateOf(ChallengeStatus.values().indexOf(selectedTab)) }
+
+    var selectedBottomNavIndex by remember { mutableStateOf(1) }
 
     Scaffold(
         topBar = {
@@ -70,64 +84,52 @@ fun ChallengesScreen(
         },
         bottomBar = {
             NavigationBar(containerColor = Color(0xFF001F3F)) {
-                NavigationBarItem(
-                    selected = selectedTabIndex == 0,
-                    onClick = {
-                        selectedTabIndex = 0
-                        navController.navigate(Screen.MainMenuScreen.route) {
-                            popUpTo(Screen.MainMenuScreen.route) { inclusive = true }
-                        }
-                    },
-                    icon = { Icon(Icons.Default.Home, contentDescription = "Dashboard") },
-                    label = { Text("Home", color = Color.White) }
+                val navItems = listOf(
+                    Screen.MainMenuScreen to Icons.Default.Home,
+                    Screen.ChallengesScreen to Icons.Default.Flag,
+                    Screen.JournalScreen to Icons.Default.List,
+                    Screen.SettingsScreen to Icons.Default.Settings
                 )
-                NavigationBarItem(
-                    selected = selectedTabIndex == 1,
-                    onClick = { selectedTabIndex = 1 },
-                    icon = { Icon(Icons.Default.Flag, contentDescription = "Challenges") },
-                    label = { Text("Challenges", color = Color.White) }
-                )
-                NavigationBarItem(
-                    selected = selectedTabIndex == 2,
-                    onClick = {
-                        selectedTabIndex = 2
-                        navController.navigate(Screen.JournalScreen.route) {
-                            popUpTo(Screen.MainMenuScreen.route)
-                        }
-                    },
-                    icon = { Icon(Icons.Default.List, contentDescription = "Journal") },
-                    label = { Text("Journal", color = Color.White) }
-                )
-                NavigationBarItem(
-                    selected = selectedTabIndex == 2,
-                    onClick = {
-                        selectedTabIndex = 2
-                        navController.navigate("settings") {
-                            popUpTo("dashboard")
-                        }
-                    },
-                    icon = { Icon(Icons.Default.Settings, contentDescription = "Settings") },
-                    label = { Text("Settings", color = Color.White) }
-                )
+
+                navItems.forEachIndexed { index, pair ->
+                    val screen = pair.first
+                    val icon = pair.second
+
+                    NavigationBarItem(
+                        selected = selectedBottomNavIndex == index,
+                        onClick = {
+                            selectedBottomNavIndex = index
+                            navController.navigate(screen.route) {
+                                popUpTo(Screen.MainMenuScreen.route)
+                            }
+                        },
+                        icon = { Icon(imageVector = icon, contentDescription = screen.route) },
+                        label = { Text(text = screen.route.replaceFirstChar { it.uppercase() }, color = Color.White) }
+                    )
+                }
             }
         },
         containerColor = Color(0xFF001F3F)
     ) { paddingValues ->
         Column(modifier = Modifier.padding(paddingValues)) {
+            val tabTitles = listOf("Active", "Available", "History")
             TabRow(
-                selectedTabIndex = ChallengeStatus.values().indexOf(selectedTab),
+                selectedTabIndex = selectedChallengeTabIndex,
                 containerColor = Color(0xFF001F3F)
             ) {
-                ChallengeStatus.values().forEachIndexed { index, status ->
+                tabTitles.forEachIndexed { index, title ->
                     Tab(
-                        selected = selectedTab == status,
-                        onClick = { viewModel.setTab(status) },
-                        text = { Text(status.name, color = Color.White) }
+                        selected = selectedChallengeTabIndex == index,
+                        onClick = {
+                            selectedChallengeTabIndex = index
+                            viewModel.setTab(ChallengeStatus.values()[index])
+                        },
+                        text = { Text(title, color = Color.White) }
                     )
                 }
             }
 
-            LazyColumn {
+            LazyColumn(modifier = Modifier.fillMaxSize()) {
                 items(filteredChallenges) { challenge ->
                     ChallengeCard(challenge) {
                         viewModel.selectChallenge(challenge)
@@ -135,14 +137,6 @@ fun ChallengesScreen(
                     }
                 }
             }
-//            LazyColumn {
-//                items(viewModel.getFilteredChallenges()) { challenge ->
-//                    ChallengeCard(challenge) {
-//                        viewModel.selectChallenge(challenge)
-//                        navController.navigate("challengeDetail")
-//                    }
-//                }
-//            }
         }
     }
 }
@@ -159,14 +153,39 @@ fun ChallengeCard(challenge: Challenge, onClick: () -> Unit) {
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Text(challenge.type.name, color = Color.White, fontWeight = FontWeight.Bold)
-            Spacer(modifier = Modifier.height(8.dp))
-            LinearProgressIndicator(
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            RingView(
                 progress = challenge.progress.toFloat(),
-                modifier = Modifier.fillMaxWidth(),
-                color = Color.Green
+                label = "${(challenge.progress * 100).toInt()}%",
+                color = Color(0xFF00FF00),
+                size = 80.dp,
+                goalReached = challenge.progress >= 1.0f
             )
-            Spacer(modifier = Modifier.height(8.dp))
-            Text("Progress: ${(challenge.progress * 100).toInt()}%", color = Color.White)
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("Days left: ${challenge.daysLeft}", color = Color.White)
+                val badgeColor = when (challenge.reward) {
+                    RewardType.Bronze -> Color(0xFFCD7F32)
+                    RewardType.Silver -> Color(0xFFC0C0C0)
+                    RewardType.Gold -> Color(0xFFFFD700)
+                }
+                Box(
+                    modifier = Modifier
+                        .size(32.dp)
+                        .background(badgeColor, shape = CircleShape),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(challenge.reward.name.first().toString(), color = Color.White, fontWeight = FontWeight.Bold)
+                }
+            }
         }
     }
 }

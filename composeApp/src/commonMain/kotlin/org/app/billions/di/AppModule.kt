@@ -14,6 +14,6 @@ val viewModule = module {
 
     viewModelOf(::SplashScreenViewModel)
     viewModelOf(::ChallengesViewModel)
-    single { JournalViewModel(get(), get(), get()) }
+    single { JournalViewModel(get(), get(), get(), get()) }
 }
 

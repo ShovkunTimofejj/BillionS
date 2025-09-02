@@ -27,10 +27,11 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import org.app.billions.data.model.RewardType
 import org.app.billions.ui.screens.Screen
+import org.app.billions.ui.screens.viewModel.ChallengesViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun RewardsGalleryScreen(navController: NavHostController) {
+fun RewardsGalleryScreen(navController: NavHostController, viewModel: ChallengesViewModel) {
     val rewards = listOf(RewardType.Bronze, RewardType.Silver, RewardType.Gold)
 
     Scaffold(

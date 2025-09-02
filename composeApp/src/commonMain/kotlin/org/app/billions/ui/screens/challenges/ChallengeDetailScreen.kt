@@ -42,7 +42,7 @@ import org.koin.compose.viewmodel.koinViewModel
 @Composable
 fun ChallengeDetailScreen(
     navController: NavHostController,
-    viewModel: ChallengesViewModel = koinViewModel()
+    viewModel: ChallengesViewModel
 ) {
     val challengeState = viewModel.selectedChallenge.collectAsState()
     val challenge = challengeState.value
@@ -122,7 +122,13 @@ fun ChallengeDetailScreen(
             Spacer(Modifier.height(24.dp))
 
             Button(
-                onClick = { /* Join/Leave logic */ },
+                onClick = {
+                    if (challenge.status == ChallengeStatus.Active) {
+                        viewModel.leaveChallenge()
+                    } else {
+                        viewModel.joinChallenge()
+                    }
+                },
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text(if (challenge.status == ChallengeStatus.Active) "Leave" else "Join")

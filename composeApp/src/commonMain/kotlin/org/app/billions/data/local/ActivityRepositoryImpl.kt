@@ -65,7 +65,7 @@ class ActivityRepositoryImpl(private val db: BillionS) : ActivityRepository {
     }
 }
 
-private fun ActivitySampleEntity.toModel() = ActivitySample(
+public fun ActivitySampleEntity.toModel() = ActivitySample(
     id = id,
     date = LocalDateTime.parse(date),
     steps = steps,
