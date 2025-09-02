@@ -44,10 +44,10 @@ import org.koin.compose.viewmodel.koinViewModel
 @Composable
 fun JournalScreen(
     navController: NavController,
-    viewModel: JournalViewModel = koinViewModel()
+    viewModel: JournalViewModel
 ) {
     val state by viewModel.state
-    var selectedTabIndex by remember { mutableStateOf(2) } // 2 — Journal
+    var selectedTabIndex by remember { mutableStateOf(2) }
 
     Scaffold(
         topBar = {
@@ -142,9 +142,9 @@ fun JournalScreen(
                 }
             }
 
-            if (state.showAddDialog) {
+            if (viewModel.showAddDialog.value) {
                 AddEditEntryDialog(
-                    editing = state.editingEntry,
+                    editing = viewModel.editingEntry.value,
                     onSave = { viewModel.saveEntry(it) },
                     onCancel = { viewModel.hideAddEntryDialog() }
                 )

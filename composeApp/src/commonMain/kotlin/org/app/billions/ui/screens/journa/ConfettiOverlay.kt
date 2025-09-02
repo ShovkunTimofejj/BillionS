@@ -16,26 +16,24 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.rotate
 
 @Composable
 fun ConfettiOverlay() {
-    val particles = remember { List(200) { ConfettiParticle() } }
-    val scope = rememberCoroutineScope()
+    val particles = remember { List(150) { ConfettiParticle() } }
 
     Box(Modifier.fillMaxSize()) {
         particles.forEach { particle ->
             val yAnim = remember { Animatable(0f) }
-            val xOffset = remember { particle.startX }
 
             LaunchedEffect(Unit) {
                 yAnim.animateTo(
                     targetValue = 1f,
-                    animationSpec = infiniteRepeatable(
-                        animation = tween(
-                            durationMillis = (1200..3000).random(),
-                            easing = LinearEasing
-                        )
+                    animationSpec = tween(
+                        durationMillis = (2000..4000).random(),
+                        easing = LinearEasing
                     )
                 )
             }
@@ -45,16 +43,35 @@ fun ConfettiOverlay() {
                 val h = size.height
                 val t = yAnim.value
 
-                val x = (xOffset * w + particle.drift * t * w) % w
-                val y = ((particle.startY + t * particle.speed) % 1f) * h
+                val x = (particle.startX * w + particle.drift * t * w) % w
+                val y = particle.startY * h + t * particle.speed * h
+
                 val rotation = 360f * t * particle.spin
 
                 rotate(rotation, pivot = Offset(x, y)) {
-                    drawCircle(
-                        color = particle.color.copy(alpha = particle.alpha),
-                        radius = particle.size,
-                        center = Offset(x, y)
-                    )
+                    when (particle.type) {
+                        ConfettiType.RECTANGLE -> {
+                            drawRect(
+                                color = particle.color.copy(alpha = particle.alpha),
+                                topLeft = Offset(x - particle.width / 2, y - particle.height / 2),
+                                size = androidx.compose.ui.geometry.Size(particle.width, particle.height)
+                            )
+                        }
+                        ConfettiType.CURLY -> {
+                            val path = Path().apply {
+                                moveTo(x, y)
+                                quadraticBezierTo(
+                                    x + particle.width / 2, y + particle.height / 2,
+                                    x + particle.width, y
+                                )
+                            }
+                            drawPath(
+                                path = path,
+                                color = particle.color.copy(alpha = particle.alpha),
+                                style = Stroke(width = 2f)
+                            )
+                        }
+                    }
                 }
             }
         }
@@ -64,14 +81,14 @@ fun ConfettiOverlay() {
 private data class ConfettiParticle(
     val startX: Float = kotlin.random.Random.nextFloat(),
     val startY: Float = kotlin.random.Random.nextFloat(),
-    val drift: Float = (kotlin.random.Random.nextFloat() - 0.5f) * 0.6f,
-    val speed: Float = 0.5f + kotlin.random.Random.nextFloat() * 1.5f,
-    val size: Float = 4f + kotlin.random.Random.nextFloat() * 8f,
-    val alpha: Float = 0.5f + kotlin.random.Random.nextFloat() * 0.5f,
-    val spin: Float = 0.5f + kotlin.random.Random.nextFloat() * 2f,
-    val color: Color = Color(
-        red = 0.5f + kotlin.random.Random.nextFloat() * 0.5f,
-        green = 0.5f + kotlin.random.Random.nextFloat() * 0.5f,
-        blue = 0.5f + kotlin.random.Random.nextFloat() * 0.5f
-    )
+    val drift: Float = (kotlin.random.Random.nextFloat() - 0.5f) * 0.4f,
+    val speed: Float = 0.3f + kotlin.random.Random.nextFloat() * 0.7f,
+    val width: Float = 8f + kotlin.random.Random.nextFloat() * 6f,
+    val height: Float = 8f + kotlin.random.Random.nextFloat() * 6f,
+    val alpha: Float = 0.6f + kotlin.random.Random.nextFloat() * 0.4f,
+    val spin: Float = 0.3f + kotlin.random.Random.nextFloat() * 1.2f,
+    val color: Color = Color(0xFF00FF00),
+    val type: ConfettiType = if (kotlin.random.Random.nextBoolean()) ConfettiType.RECTANGLE else ConfettiType.CURLY
 )
+
+private enum class ConfettiType { RECTANGLE, CURLY }

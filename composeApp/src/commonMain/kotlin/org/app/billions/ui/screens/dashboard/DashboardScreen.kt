@@ -33,6 +33,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.Icons.Default
 import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Flag
@@ -46,25 +47,25 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import org.app.billions.ui.screens.Screen
+import org.app.billions.ui.screens.journa.AddEditEntryDialog
+import org.app.billions.ui.screens.viewModel.JournalViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DashboardScreen(navController: NavHostController) {
+fun DashboardScreen(viewModel: JournalViewModel, navController: NavHostController) {
+    val state by viewModel.state
     val Lime = Color(0xFF00FF00)
-    var selectedTabIndex by remember { mutableStateOf(0) } // 0 - Dashboard, 1 - Challenges, 2 - Settings
+    var selectedTabIndex by remember { mutableStateOf(0) }
 
     Scaffold(
         topBar = {
             TopAppBar(
                 title = { Text("Dashboard", color = Color.White) },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color(0xFF001F3F),
-                    titleContentColor = Color.White
-                ),
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color(0xFF001F3F)),
                 actions = {
-                    IconButton(onClick = { /* TODO: открыть AddEntry */ }) {
+                    IconButton(onClick = { viewModel.showAddEntryDialog() }) {
                         Icon(
-                            imageVector = Icons.Filled.Add,
+                            imageVector = Icons.Default.Add,
                             contentDescription = "Add Entry",
                             tint = Color.White
                         )
@@ -123,110 +124,102 @@ fun DashboardScreen(navController: NavHostController) {
                 .padding(paddingValues)
                 .verticalScroll(rememberScrollState())
         ) {
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp),
-                shape = RoundedCornerShape(12.dp),
-                colors = CardDefaults.cardColors(containerColor = Color(0xFF002A55))
-            ) {
-                Column(modifier = Modifier.padding(16.dp)) {
-                    Text("Lifetime Counter", color = Color.White, fontSize = 18.sp)
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text("0 to a Billion", color = Lime, fontSize = 24.sp, fontWeight = FontWeight.Bold)
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Row {
-                        Button(onClick = { /* TODO: share progress */ }) {
-                            Text("Share Progress")
-                        }
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Button(onClick = { /* TODO: show stats */ }) {
-                            Text("All-time Stats")
+            if (state.entries.isEmpty()) {
+                EmptyView("Let's add your first entry") { viewModel.showAddEntryDialog() }
+            } else {
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = CardDefaults.cardColors(containerColor = Color(0xFF002A55))
+                ) {
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        Text("Lifetime Counter", color = Color.White, fontSize = 18.sp)
+                        Spacer(Modifier.height(8.dp))
+                        OdometerView(
+                            steps = state.entries.sumOf { it.steps },
+                            distanceMeters = state.entries.sumOf { it.distanceMeters },
+                            calories = state.entries.sumOf { it.activeEnergyKcal },
+                            color = Lime
+                        )
+                    }
+                }
+
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 8.dp),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = CardDefaults.cardColors(containerColor = Color(0xFF002A55))
+                ) {
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        Text("Today Rings", color = Color.White, fontSize = 18.sp)
+                        Spacer(Modifier.height(8.dp))
+                        val stepsToday = state.entries.sumOf { it.steps }
+                        val distanceToday = state.entries.sumOf { it.distanceMeters }
+                        val caloriesToday = state.entries.sumOf { it.activeEnergyKcal }
+                        Row(
+                            horizontalArrangement = Arrangement.SpaceAround,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            RingView(
+                                progress = stepsToday.toFloat() / 10000,
+                                label = "Steps",
+                                color = Lime,
+                                goalReached = stepsToday >= 10000
+                            )
+                            RingView(
+                                progress = distanceToday.toFloat() / 5000,
+                                label = "Distance",
+                                color = Lime,
+                                goalReached = distanceToday >= 5000
+                            )
+                            RingView(
+                                progress = caloriesToday.toFloat() / 500,
+                                label = "Calories",
+                                color = Lime,
+                                goalReached = caloriesToday >= 500
+                            )
                         }
                     }
                 }
-            }
 
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 8.dp),
-                shape = RoundedCornerShape(12.dp),
-                colors = CardDefaults.cardColors(containerColor = Color(0xFF002A55))
-            ) {
-                Column(modifier = Modifier.padding(16.dp)) {
-                    Text("Today Rings", color = Color.White, fontSize = 18.sp)
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Row(
-                        horizontalArrangement = Arrangement.SpaceAround,
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            Text("Steps", color = Color.White)
-                            Text("0", color = Lime, fontSize = 20.sp)
-                        }
-                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            Text("Distance", color = Color.White)
-                            Text("0 km", color = Lime, fontSize = 20.sp)
-                        }
-                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            Text("Calories", color = Color.White)
-                            Text("0 kcal", color = Lime, fontSize = 20.sp)
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = CardDefaults.cardColors(containerColor = Color(0xFF002A55))
+                ) {
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        Text("Quick Add", color = Color.White, fontSize = 18.sp)
+                        Spacer(Modifier.height(8.dp))
+                        Row(
+                            horizontalArrangement = Arrangement.SpaceAround,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            PrimaryButton("+Steps") { viewModel.showAddEntryDialog() }
+                            PrimaryButton("+Distance") { viewModel.showAddEntryDialog() }
+                            PrimaryButton("+Calories") { viewModel.showAddEntryDialog() }
                         }
                     }
                 }
-            }
 
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp),
-                shape = RoundedCornerShape(12.dp),
-                colors = CardDefaults.cardColors(containerColor = Color(0xFF002A55))
-            ) {
-                Column(modifier = Modifier.padding(16.dp)) {
-                    Text("Quick Add", color = Color.White, fontSize = 18.sp)
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Row(
-                        horizontalArrangement = Arrangement.SpaceAround,
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Button(onClick = { /* TODO: add Steps */ }) { Text("+Steps") }
-                        Button(onClick = { /* TODO: add Distance */ }) { Text("+Distance") }
-                        Button(onClick = { /* TODO: add Calories */ }) { Text("+Calories") }
-                    }
-                }
-            }
-
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 8.dp),
-                shape = RoundedCornerShape(12.dp),
-                colors = CardDefaults.cardColors(containerColor = Color(0xFF002A55))
-            ) {
-                Column(modifier = Modifier.padding(16.dp)) {
-                    Text("Highlights", color = Color.White, fontSize = 18.sp)
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text("Best day this week: 0 steps", color = Lime)
-                    Text("X% to weekly target: 0%", color = Lime)
-                }
-            }
-
-            Spacer(modifier = Modifier.height(24.dp))
-            Column(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Image(
-                    painter = painterResource(Res.drawable.app_logo),
-                    contentDescription = "Monocle Guy",
-                    modifier = Modifier.size(150.dp)
+                HighlightsCard(
+                    entries = state.entries,
+                    color = Lime,
+                    onClick = { navController.navigate(Screen.ComparisonScreen.route) }
                 )
-                Spacer(modifier = Modifier.height(8.dp))
-                Text("Let's add your first entry", color = Color.White)
             }
         }
     }
-}
 
+    if (viewModel.showAddDialog.value) {
+        AddEditEntryDialog(
+            editing = viewModel.editingEntry.value,
+            onSave = { viewModel.saveEntry(it) },
+            onCancel = { viewModel.hideAddEntryDialog() }
+        )
+    }
+}

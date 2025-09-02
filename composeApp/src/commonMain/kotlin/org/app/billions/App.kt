@@ -10,6 +10,7 @@ import org.app.billions.ui.screens.Screen
 import org.app.billions.ui.screens.challenges.ChallengeDetailScreen
 import org.app.billions.ui.screens.challenges.ChallengesScreen
 import org.app.billions.ui.screens.challenges.RewardsGalleryScreen
+import org.app.billions.ui.screens.dashboard.ComparisonScreen
 import org.app.billions.ui.screens.dashboard.DashboardScreen
 import org.app.billions.ui.screens.journa.EntryDetailScreen
 import org.app.billions.ui.screens.journa.JournalScreen
@@ -38,7 +39,7 @@ fun App() {
         }
 
         composable(Screen.MainMenuScreen.route) {
-            DashboardScreen(navController)
+            DashboardScreen(journalViewModel, navController)
         }
 
         composable(Screen.ChallengesScreen.route) {
@@ -54,11 +55,17 @@ fun App() {
         }
 
         composable(Screen.JournalScreen.route) {
-            JournalScreen(navController)
+            JournalScreen(navController, journalViewModel)
         }
 
         composable("entryDetail") {
             EntryDetailScreen(navController, journalViewModel)
+        }
+        composable(Screen.ComparisonScreen.route) {
+            ComparisonScreen(
+                navController = navController,
+                viewModel = journalViewModel
+            )
         }
     }
 }

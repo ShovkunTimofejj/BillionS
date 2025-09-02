@@ -29,9 +29,14 @@ class JournalViewModel(
 
     private val viewModelJob = SupervisorJob()
     private val scope = CoroutineScope(Dispatchers.Main + viewModelJob)
-
     private val _state = mutableStateOf(JournalState())
     val state: State<JournalState> = _state
+
+    private val _showAddDialog = mutableStateOf(false)
+    val showAddDialog: State<Boolean> = _showAddDialog
+
+    private val _editingEntry = mutableStateOf<ActivitySample?>(null)
+    val editingEntry: State<ActivitySample?> = _editingEntry
 
     private val _selectedEntry = MutableStateFlow<ActivitySample?>(null)
     val selectedEntry: StateFlow<ActivitySample?> = _selectedEntry
@@ -77,15 +82,17 @@ class JournalViewModel(
     }
 
     fun showAddEntryDialog(editing: ActivitySample? = null) {
-        _state.value = _state.value.copy(showAddDialog = true, editingEntry = editing)
+        _editingEntry.value = editing
+        _showAddDialog.value = true
     }
 
     fun hideAddEntryDialog() {
-        _state.value = _state.value.copy(showAddDialog = false, editingEntry = null)
+        _editingEntry.value = null
+        _showAddDialog.value = false
     }
 
     fun startEdit(entry: ActivitySample) {
-        _state.value = _state.value.copy(showAddDialog = true, editingEntry = entry)
+        showAddEntryDialog(entry)
     }
 
     fun saveEntry(entry: ActivitySample) {
@@ -140,9 +147,6 @@ class JournalViewModel(
     }
 
     fun exportCsv() {
-
-        println("exportCsv() called, entries count: ${_state.value.entries.size}")
-
         val csv = buildString {
             appendLine("date,type,amount,note,source")
             _state.value.entries.forEach { e ->
