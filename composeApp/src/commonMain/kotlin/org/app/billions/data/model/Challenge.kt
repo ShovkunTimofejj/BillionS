@@ -10,7 +10,8 @@ data class Challenge(
     val progress: Double,
     val goal: Double,
     val daysLeft: Long,
-    val reward: RewardType
+    val reward: RewardType,
+    val startDate: Long
 )
 
 enum class RewardType { Bronze, Silver, Gold }

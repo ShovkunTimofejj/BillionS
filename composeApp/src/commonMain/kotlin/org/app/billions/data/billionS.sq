@@ -41,12 +41,13 @@ CREATE TABLE GlobalCounterEntity (
 -- Таблица челленджей
 CREATE TABLE ChallengeEntity (
     id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-    type TEXT NOT NULL,          -- Marathon30 / Sprint7 / Streak14
-    status TEXT NOT NULL,        -- active / available / completed / failed
+    type TEXT NOT NULL,
+    status TEXT NOT NULL,
     progress REAL NOT NULL,
     goal REAL NOT NULL,
     daysLeft INTEGER NOT NULL,
-    reward TEXT NOT NULL         -- bronze / silver / gold
+    reward TEXT NOT NULL,
+    startDate INTEGER NOT NULL -- timestamp
 );
 
 -- Таблица тем
@@ -83,11 +84,11 @@ WHERE date BETWEEN ? AND ?;
 
 updateChallenge:
 UPDATE ChallengeEntity
-SET type = ?, status = ?, progress = ?, goal = ?, daysLeft = ?, reward = ?
+SET type = ?, status = ?, progress = ?, goal = ?, daysLeft = ?, reward = ?, startDate = ?
 WHERE id = ?;
 
 insertChallenge:
-INSERT INTO ChallengeEntity(id, type, status, progress, goal, daysLeft, reward) VALUES (?, ?, ?, ?, ?, ?, ?);
+INSERT INTO ChallengeEntity(id, type, status, progress, goal, daysLeft, reward, startDate) VALUES (?, ?, ?, ?, ?, ?, ?, ?);
 
 getThemes:
 SELECT * FROM ThemeEntity;

@@ -46,7 +46,6 @@ fun ChallengeDetailScreen(
 ) {
     val challengeState = viewModel.selectedChallenge.collectAsState()
     val challenge = challengeState.value
-
     if (challenge == null) {
         Text("Challenge not found", color = Color.White)
         return
@@ -67,15 +66,10 @@ fun ChallengeDetailScreen(
         containerColor = Color(0xFF001F3F)
     ) { paddingValues ->
         Column(
-            modifier = Modifier
-                .padding(paddingValues)
-                .padding(16.dp),
+            modifier = Modifier.padding(paddingValues).padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Box(
-                contentAlignment = Alignment.Center,
-                modifier = Modifier.size(200.dp)
-            ) {
+            Box(contentAlignment = Alignment.Center, modifier = Modifier.size(200.dp)) {
                 CircularProgressIndicator(
                     progress = challenge.progress.toFloat(),
                     strokeWidth = 16.dp,
@@ -89,49 +83,36 @@ fun ChallengeDetailScreen(
                     fontWeight = FontWeight.Bold
                 )
             }
-
             Spacer(Modifier.height(16.dp))
-
-            Text(
-                text = "Days left: ${challenge.daysLeft}",
-                color = Color.White,
-                fontSize = 18.sp
-            )
-
+            Text(text = "Days left: ${challenge.daysLeft}", color = Color.White, fontSize = 18.sp)
             Spacer(Modifier.height(16.dp))
-
-            Box(
-                contentAlignment = Alignment.Center,
-                modifier = Modifier.size(80.dp)
-            ) {
-                val badgeColor = when(challenge.reward) {
+            Box(contentAlignment = Alignment.Center, modifier = Modifier.size(80.dp)) {
+                val badgeColor = when (challenge.reward) {
                     RewardType.Bronze -> Color(0xFFCD7F32)
                     RewardType.Silver -> Color(0xFFC0C0C0)
                     RewardType.Gold -> Color(0xFFFFD700)
                 }
-                Canvas(modifier = Modifier.fillMaxSize()) {
-                    drawCircle(color = badgeColor)
-                }
-                Text(
-                    text = challenge.reward.name,
-                    color = Color.White,
-                    fontWeight = FontWeight.Bold
-                )
+                Canvas(modifier = Modifier.fillMaxSize()) { drawCircle(color = badgeColor) }
+                Text(text = challenge.reward.name, color = Color.White, fontWeight = FontWeight.Bold)
             }
-
             Spacer(Modifier.height(24.dp))
-
             Button(
                 onClick = {
-                    if (challenge.status == ChallengeStatus.Active) {
-                        viewModel.leaveChallenge()
-                    } else {
-                        viewModel.joinChallenge()
+                    when (challenge.status) {
+                        ChallengeStatus.Active -> viewModel.leaveChallenge()
+                        ChallengeStatus.Available -> viewModel.joinChallenge()
+                        ChallengeStatus.Completed -> viewModel.restartChallenge()
                     }
                 },
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text(if (challenge.status == ChallengeStatus.Active) "Leave" else "Join")
+                Text(
+                    when (challenge.status) {
+                        ChallengeStatus.Active -> "Leave"
+                        ChallengeStatus.Available -> "Join"
+                        ChallengeStatus.Completed -> "Restart"
+                    }
+                )
             }
         }
     }
