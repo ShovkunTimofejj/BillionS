@@ -106,8 +106,10 @@ fun JournalScreen(
                     selected = selectedTabIndex == 3,
                     onClick = {
                         selectedTabIndex = 3
-                        navController.navigate("settings") {
-                            popUpTo("dashboard")
+                        navController.navigate(Screen.SettingsScreen.route) {
+                            popUpTo(Screen.MainMenuScreen.route) { saveState = true }
+                            launchSingleTop = true
+                            restoreState = true
                         }
                     },
                     icon = { Icon(Icons.Default.Settings, contentDescription = "Settings") },

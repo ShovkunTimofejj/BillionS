@@ -49,6 +49,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
+import androidx.navigation.compose.currentBackStackEntryAsState
 import kotlinx.coroutines.flow.combine
 import org.app.billions.data.model.Challenge
 import org.app.billions.data.model.ChallengeStatus
@@ -83,6 +84,9 @@ fun ChallengesScreen(
             )
         },
         bottomBar = {
+            val navBackStackEntry by navController.currentBackStackEntryAsState()
+            val currentRoute = navBackStackEntry?.destination?.route
+
             NavigationBar(containerColor = Color(0xFF001F3F)) {
                 val navItems = listOf(
                     Screen.MainMenuScreen to Icons.Default.Home,
@@ -91,16 +95,14 @@ fun ChallengesScreen(
                     Screen.SettingsScreen to Icons.Default.Settings
                 )
 
-                navItems.forEachIndexed { index, pair ->
-                    val screen = pair.first
-                    val icon = pair.second
-
+                navItems.forEach { (screen, icon) ->
                     NavigationBarItem(
-                        selected = selectedBottomNavIndex == index,
+                        selected = currentRoute == screen.route,
                         onClick = {
-                            selectedBottomNavIndex = index
                             navController.navigate(screen.route) {
-                                popUpTo(Screen.MainMenuScreen.route)
+                                popUpTo(navController.graph.startDestinationId) { saveState = true }
+                                launchSingleTop = true
+                                restoreState = true
                             }
                         },
                         icon = { Icon(imageVector = icon, contentDescription = screen.route) },

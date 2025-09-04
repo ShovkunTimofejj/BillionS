@@ -9,8 +9,7 @@ import org.app.billions.data.model.User
 import org.app.billions.data.repository.UserRepository
 
 class UserRepositoryImpl(private val db: BillionS) : UserRepository {
-
-    val queries = db.billionSQueries
+    private val queries = db.billionSQueries
 
     override suspend fun getUser(): User? = withContext(Dispatchers.Default) {
         queries.getUser().executeAsOneOrNull()?.let {

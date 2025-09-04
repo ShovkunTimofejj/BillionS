@@ -110,7 +110,12 @@ fun DashboardScreen(viewModel: JournalViewModel, navController: NavHostControlle
                 )
                 NavigationBarItem(
                     selected = selectedTabIndex == 3,
-                    onClick = { selectedTabIndex = 3 },
+                    onClick = {
+                        selectedTabIndex = 3
+                        navController.navigate(Screen.SettingsScreen.route) {
+                            launchSingleTop = true
+                        }
+                    },
                     icon = { Icon(Icons.Default.Settings, contentDescription = "Settings") },
                     label = { Text("Settings", color = Color.White) }
                 )

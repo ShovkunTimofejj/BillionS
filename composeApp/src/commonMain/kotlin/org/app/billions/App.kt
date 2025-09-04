@@ -12,9 +12,14 @@ import org.app.billions.ui.screens.challenges.ChallengesScreen
 import org.app.billions.ui.screens.challenges.RewardsGalleryScreen
 import org.app.billions.ui.screens.dashboard.ComparisonScreen
 import org.app.billions.ui.screens.dashboard.DashboardScreen
+import org.app.billions.ui.screens.inAppPurchase.BillingRepository
+import org.app.billions.ui.screens.inAppPurchase.InAppPurchaseScreen
 import org.app.billions.ui.screens.journa.EntryDetailScreen
 import org.app.billions.ui.screens.journa.JournalScreen
 import org.app.billions.ui.screens.onboarding.OnboardingScreen
+import org.app.billions.ui.screens.settings.AboutScreen
+import org.app.billions.ui.screens.settings.DailyGoalsScreen
+import org.app.billions.ui.screens.settings.SettingsScreen
 import org.app.billions.ui.screens.splash.SplashScreen
 import org.app.billions.ui.screens.viewModel.ChallengesViewModel
 import org.app.billions.ui.screens.viewModel.JournalViewModel
@@ -22,7 +27,7 @@ import org.app.billions.ui.screens.viewModel.SplashScreenViewModel
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
-fun App() {
+fun App(billingRepository: BillingRepository) {
     val navController = rememberNavController()
     val splashScreenViewModel: SplashScreenViewModel = koinViewModel()
     val journalViewModel: JournalViewModel = koinViewModel()
@@ -69,6 +74,25 @@ fun App() {
                 navController = navController,
                 viewModel = journalViewModel
             )
+        }
+
+        composable(Screen.SettingsScreen.route) {
+            SettingsScreen(navController)
+        }
+
+        composable(Screen.InAppPurchaseScreen.route) {
+            InAppPurchaseScreen(
+                navController = navController,
+                billingRepository = billingRepository
+            )
+        }
+
+        composable(Screen.DailyGoalsDetailScreen.route) {
+            DailyGoalsScreen(navController)
+        }
+
+        composable(Screen.AboutScreen.route) {
+            AboutScreen(navController)
         }
     }
 }
