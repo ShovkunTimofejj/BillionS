@@ -1,6 +1,7 @@
 package org.app.billions.data.local
 
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.IO
 import kotlinx.coroutines.withContext
 import kotlinx.datetime.Clock
 import kotlinx.datetime.LocalDateTime
@@ -9,6 +10,7 @@ import kotlinx.datetime.toLocalDateTime
 import org.app.billions.data.ActivitySampleEntity
 import org.app.billions.data.BillionS
 import org.app.billions.data.model.ActivitySample
+import org.app.billions.data.model.DailyGoals
 import org.app.billions.data.repository.ActivityRepository
 
 class ActivityRepositoryImpl(private val db: BillionS) : ActivityRepository {
@@ -23,6 +25,25 @@ class ActivityRepositoryImpl(private val db: BillionS) : ActivityRepository {
             distanceMeters = sample.distanceMeters,
             activeEnergyKcal = sample.activeEnergyKcal,
             source = sample.source
+        )
+    }
+
+    override suspend fun getDailyGoals(): DailyGoals? = withContext(Dispatchers.IO) {
+        q.selectDailyGoals().executeAsOneOrNull()?.let {
+            DailyGoals(
+                stepGoal = it.stepGoal,
+                distanceGoal = it.distanceGoal,
+                calorieGoal = it.calorieGoal
+            )
+        }
+    }
+
+    override suspend fun saveDailyGoals(goals: DailyGoals) = withContext(Dispatchers.IO) {
+        q.clearDailyGoals()
+        q.insertDailyGoals(
+            stepGoal = goals.stepGoal,
+            distanceGoal = goals.distanceGoal,
+            calorieGoal = goals.calorieGoal
         )
     }
 

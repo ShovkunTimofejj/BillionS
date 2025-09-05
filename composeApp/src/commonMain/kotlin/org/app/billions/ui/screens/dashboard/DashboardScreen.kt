@@ -168,23 +168,25 @@ fun DashboardScreen(viewModel: JournalViewModel, navController: NavHostControlle
                             horizontalArrangement = Arrangement.SpaceAround,
                             modifier = Modifier.fillMaxWidth()
                         ) {
+                            val goals = viewModel.dailyGoals.value
+
                             RingView(
-                                progress = stepsToday.toFloat() / 10000,
+                                progress = stepsToday.toFloat() / goals.stepGoal,
                                 label = "Steps",
                                 color = Lime,
-                                goalReached = stepsToday >= 10000
+                                goalReached = stepsToday >= goals.stepGoal
                             )
                             RingView(
-                                progress = distanceToday.toFloat() / 5000,
+                                progress = distanceToday.toFloat() / goals.distanceGoal,
                                 label = "Distance",
                                 color = Lime,
-                                goalReached = distanceToday >= 5000
+                                goalReached = distanceToday >= goals.distanceGoal
                             )
                             RingView(
-                                progress = caloriesToday.toFloat() / 500,
+                                progress = caloriesToday.toFloat() / goals.calorieGoal,
                                 label = "Calories",
                                 color = Lime,
-                                goalReached = caloriesToday >= 500
+                                goalReached = caloriesToday >= goals.calorieGoal
                             )
                         }
                     }

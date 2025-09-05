@@ -54,9 +54,20 @@ CREATE TABLE ChallengeEntity (
 CREATE TABLE ThemeEntity (
     id TEXT NOT NULL PRIMARY KEY,
     name TEXT NOT NULL,
-    isPurchased INTEGER NOT NULL
+    isPurchased INTEGER NOT NULL,
+    backgroundRes TEXT NOT NULL,  -- имя drawable фона
+    logoRes TEXT NOT NULL,        -- имя drawable логотипа
+    monocleRes TEXT NOT NULL,     -- имя drawable Monocle Guy
+    primaryColor INTEGER NOT NULL, -- основной цвет (ARGB)
+    splashText TEXT NOT NULL       -- текст на сплэше
 );
 
+CREATE TABLE DailyGoals (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    stepGoal INTEGER NOT NULL,
+    distanceGoal INTEGER NOT NULL,
+    calorieGoal INTEGER NOT NULL
+);
 
 getUser:
 SELECT * FROM UserEntity LIMIT 1;
@@ -108,8 +119,20 @@ getActivityById:
 SELECT * FROM ActivitySampleEntity WHERE id = ?;
 
 insertTheme:
-INSERT OR REPLACE INTO ThemeEntity(id, name, isPurchased)
+INSERT OR REPLACE INTO ThemeEntity(
+    id, name, isPurchased, backgroundRes, logoRes, monocleRes, primaryColor, splashText
+) VALUES (?, ?, ?, ?, ?, ?, ?, ?);
+
+selectDailyGoals:
+SELECT * FROM DailyGoals LIMIT 1;
+
+insertDailyGoals:
+INSERT INTO DailyGoals(stepGoal, distanceGoal, calorieGoal)
 VALUES (?, ?, ?);
+
+clearDailyGoals:
+DELETE FROM DailyGoals;
+
 
 
 

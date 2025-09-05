@@ -17,6 +17,7 @@ import kotlinx.datetime.TimeZone
 import kotlinx.datetime.minus
 import kotlinx.datetime.toLocalDateTime
 import org.app.billions.data.model.ActivitySample
+import org.app.billions.data.model.DailyGoals
 import org.app.billions.data.repository.ActivityRepository
 import org.app.billions.ui.screens.journa.FilterType
 import org.app.billions.ui.screens.journa.MetricType
@@ -42,14 +43,33 @@ class JournalViewModel(
     private val _selectedEntry = MutableStateFlow<ActivitySample?>(null)
     val selectedEntry: StateFlow<ActivitySample?> = _selectedEntry
 
+    private val _dailyGoals = mutableStateOf(DailyGoals())
+    val dailyGoals: State<DailyGoals> = _dailyGoals
+
     init {
         loadEntries(FilterType.Today)
+        loadDailyGoals()
     }
 
     fun selectEntry(entry: ActivitySample) {
         _selectedEntry.value = entry
     }
 
+    private fun loadDailyGoals() {
+        scope.launch {
+            val goals = repo.getDailyGoals()
+            if (goals != null) {
+                _dailyGoals.value = goals
+            }
+        }
+    }
+
+    fun updateGoals(goals: DailyGoals) {
+        scope.launch {
+            repo.saveDailyGoals(goals)
+            _dailyGoals.value = goals
+        }
+    }
     fun loadEntries(filter: FilterType = _state.value.filter) {
         scope.launch {
             val now = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date

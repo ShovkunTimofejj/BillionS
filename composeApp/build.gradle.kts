@@ -62,6 +62,7 @@ kotlin {
             implementation(libs.multiplatform.settings.no.arg)
             implementation(libs.koin.compose.viewmodel)
             implementation(compose.materialIconsExtended)
+            api(libs.kmpnotifier)
 
         }
         iosMain.dependencies {

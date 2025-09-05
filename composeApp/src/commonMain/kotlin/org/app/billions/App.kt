@@ -6,6 +6,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import org.app.billions.notifications.NotificationsDetailScreen
 import org.app.billions.ui.screens.Screen
 import org.app.billions.ui.screens.challenges.ChallengeDetailScreen
 import org.app.billions.ui.screens.challenges.ChallengesScreen
@@ -24,6 +25,7 @@ import org.app.billions.ui.screens.splash.SplashScreen
 import org.app.billions.ui.screens.viewModel.ChallengesViewModel
 import org.app.billions.ui.screens.viewModel.JournalViewModel
 import org.app.billions.ui.screens.viewModel.SplashScreenViewModel
+import org.koin.compose.getKoin
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
@@ -93,6 +95,13 @@ fun App(billingRepository: BillingRepository) {
 
         composable(Screen.AboutScreen.route) {
             AboutScreen(navController)
+        }
+
+        composable("notificationsDetail") {
+            NotificationsDetailScreen(
+                navController = navController,
+                notificationsManager = getKoin().get()
+            )
         }
     }
 }

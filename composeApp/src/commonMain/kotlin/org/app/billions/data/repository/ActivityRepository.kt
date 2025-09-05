@@ -2,6 +2,7 @@ package org.app.billions.data.repository
 
 import app.cash.sqldelight.db.QueryResult
 import org.app.billions.data.model.ActivitySample
+import org.app.billions.data.model.DailyGoals
 import org.app.billions.data.model.DailySummary
 import org.app.billions.data.model.GlobalCounter
 
@@ -15,4 +16,6 @@ interface ActivityRepository {
     suspend fun deleteSample(id: Long): QueryResult<Long>
     suspend fun updateSample(sample: ActivitySample): QueryResult<Long>
     suspend fun getSampleById(id: Long): ActivitySample?
+    suspend fun getDailyGoals(): DailyGoals?
+    suspend fun saveDailyGoals(goals: DailyGoals): QueryResult<Long>
 }
