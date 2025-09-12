@@ -2,22 +2,20 @@ CREATE TABLE UserEntity (
     id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
     nickname TEXT NOT NULL,
     avatar TEXT,
-    units TEXT NOT NULL,          -- Metric / Imperial
+    units TEXT NOT NULL,
     timezone TEXT NOT NULL,
-    subscription TEXT NOT NULL    -- Free / Premium
+    subscription TEXT NOT NULL
 );
 
--- Таблица активностей
 CREATE TABLE ActivitySampleEntity (
     id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
     date TEXT NOT NULL,
     steps INTEGER NOT NULL,
     distanceMeters REAL NOT NULL,
     activeEnergyKcal REAL NOT NULL,
-    source TEXT NOT NULL          -- manual / device / api
+    source TEXT NOT NULL
 );
 
--- Таблица сводок по дням
 CREATE TABLE DailySummaryEntity (
     id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
     date TEXT NOT NULL,
@@ -29,7 +27,6 @@ CREATE TABLE DailySummaryEntity (
     streak INTEGER NOT NULL
 );
 
--- Глобальный счётчик
 CREATE TABLE GlobalCounterEntity (
     id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
     totalSteps INTEGER NOT NULL,
@@ -38,7 +35,6 @@ CREATE TABLE GlobalCounterEntity (
     lastUpdate TEXT NOT NULL
 );
 
--- Таблица челленджей
 CREATE TABLE ChallengeEntity (
     id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
     type TEXT NOT NULL,
@@ -47,20 +43,30 @@ CREATE TABLE ChallengeEntity (
     goal REAL NOT NULL,
     daysLeft INTEGER NOT NULL,
     reward TEXT NOT NULL,
-    startDate INTEGER NOT NULL -- timestamp
+    startDate INTEGER NOT NULL
 );
 
--- Таблица тем
 CREATE TABLE ThemeEntity (
     id TEXT NOT NULL PRIMARY KEY,
     name TEXT NOT NULL,
     isPurchased INTEGER NOT NULL,
-    backgroundRes TEXT NOT NULL,  -- имя drawable фона
-    logoRes TEXT NOT NULL,        -- имя drawable логотипа
-    monocleRes TEXT NOT NULL,     -- имя drawable Monocle Guy
-    primaryColor INTEGER NOT NULL, -- основной цвет (ARGB)
-    splashText TEXT NOT NULL       -- текст на сплэше
+    backgroundRes TEXT NOT NULL,
+    logoRes TEXT NOT NULL,
+    monocleRes TEXT NOT NULL,
+    primaryColor INTEGER NOT NULL,
+    splashText TEXT NOT NULL
 );
+
+CREATE TABLE CurrentThemeEntity (
+    themeId TEXT NOT NULL PRIMARY KEY
+);
+
+INSERT INTO ThemeEntity(id, name, isPurchased, backgroundRes, logoRes, monocleRes, primaryColor, splashText)
+VALUES
+('dark_lime', 'Dark Lime', 1, 'bg_dark_lime', 'logo_dark_lime', 'monocle_dark_lime', 4278255360, 'Let’s go!'),
+('neon_coral', 'Neon Coral', 0, 'bg_neon_coral', 'logo_neon_coral', 'monocle_neon_coral', 4294936353, 'Burn bright!'),
+('royal_blue', 'Royal Blue', 0, 'bg_royal_blue', 'logo_royal_blue', 'monocle_royal_blue', 4283782485, 'Stay sharp!'),
+('graphite_gold', 'Graphite Gold', 0, 'bg_graphite_gold', 'logo_graphite_gold', 'monocle_graphite_gold', 4294956800, 'Shine on!');
 
 CREATE TABLE DailyGoals (
     id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
@@ -68,6 +74,12 @@ CREATE TABLE DailyGoals (
     distanceGoal INTEGER NOT NULL,
     calorieGoal INTEGER NOT NULL
 );
+
+insertCurrentTheme:
+INSERT OR REPLACE INTO CurrentThemeEntity(themeId) VALUES (?);
+
+getCurrentThemeId:
+SELECT themeId FROM CurrentThemeEntity LIMIT 1;
 
 getUser:
 SELECT * FROM UserEntity LIMIT 1;
@@ -132,7 +144,4 @@ VALUES (?, ?, ?);
 
 clearDailyGoals:
 DELETE FROM DailyGoals;
-
-
-
 

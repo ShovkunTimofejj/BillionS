@@ -15,5 +15,11 @@ data class Challenge(
 )
 
 enum class RewardType { Bronze, Silver, Gold }
-enum class ChallengeType { Marathon30, Sprint7, StreakBuilder14 }
+enum class ChallengeType(val displayName: String) {
+    Marathon30("Marathon 30"),
+    Sprint7("Sprint 7"),
+    StreakBuilder14("StreakBuilder 14");
+
+    override fun toString(): String = displayName
+}
 enum class ChallengeStatus { Active, Available, Completed }

@@ -2,23 +2,47 @@ package org.app.billions.billing
 
 import android.app.Activity
 import android.content.Context
+import android.os.Looper
+import android.util.Log
+import androidx.core.os.postDelayed
 import com.android.billingclient.api.*
+import kotlinx.coroutines.CancellableContinuation
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.suspendCancellableCoroutine
 import org.app.billions.data.model.Theme
 import org.app.billions.data.repository.ThemeRepository
 import org.app.billions.ui.screens.inAppPurchase.BillingRepository
 import org.app.billions.ui.screens.inAppPurchase.PurchaseResult
+import java.util.logging.Handler
 
 class AndroidBillingRepository(
     private val context: Context,
     private val themeRepository: ThemeRepository
 ) : BillingRepository {
 
+    private var purchaseContinuation: CancellableContinuation<PurchaseResult>? = null
+    private var isBillingReady: Boolean = false
+
     private val billingClient = BillingClient.newBuilder(context)
         .setListener { billingResult, purchases ->
-            if (billingResult.responseCode == BillingClient.BillingResponseCode.OK && purchases != null) {
-                handlePurchases(purchases)
+            when (billingResult.responseCode) {
+                BillingClient.BillingResponseCode.OK -> {
+                    if (purchases != null) handlePurchases(purchases)
+                }
+                BillingClient.BillingResponseCode.USER_CANCELED -> {
+                    purchaseContinuation?.resume(PurchaseResult.Failure) {}
+                    purchaseContinuation = null
+                }
+                else -> {
+                    purchaseContinuation?.resume(
+                        PurchaseResult.Error("Billing error: ${billingResult.debugMessage}")
+                    ) {}
+                    purchaseContinuation = null
+                }
             }
         }
         .enablePendingPurchases()
@@ -32,8 +56,35 @@ class AndroidBillingRepository(
 
     init {
         billingClient.startConnection(object : BillingClientStateListener {
-            override fun onBillingServiceDisconnected() {}
-            override fun onBillingSetupFinished(result: BillingResult) {}
+            override fun onBillingServiceDisconnected() {
+                isBillingReady = false
+                Log.w("Billing", "Service Google Play Billing disabled ⚠️")
+
+                android.os.Handler(Looper.getMainLooper()).postDelayed({
+                    billingClient.startConnection(this)
+                }, 2000)
+            }
+
+            override fun onBillingSetupFinished(result: BillingResult) {
+                if (result.responseCode == BillingClient.BillingResponseCode.OK) {
+                    isBillingReady = true
+                    Log.d("Billing", "BillingClient ready ✅")
+
+                    billingClient.queryPurchasesAsync(
+                        QueryPurchasesParams.newBuilder()
+                            .setProductType(BillingClient.ProductType.INAPP)
+                            .build()
+                    ) { billingResult, purchases ->
+                        if (billingResult.responseCode == BillingClient.BillingResponseCode.OK) {
+                            handlePurchases(purchases)
+                        }
+                    }
+
+                } else {
+                    isBillingReady = false
+                    Log.e("Billing", "Connection error: ${result.debugMessage}")
+                }
+            }
         })
     }
 
@@ -41,27 +92,39 @@ class AndroidBillingRepository(
         return themeRepository.getThemes()
     }
 
-    override suspend fun purchaseTheme(themeId: String): PurchaseResult {
-        val productDetails = queryProduct(themeId) ?: return PurchaseResult.Error("Product not found")
+    override suspend fun purchaseTheme(themeId: String): PurchaseResult =
+        suspendCancellableCoroutine { continuation ->
+            CoroutineScope(Dispatchers.IO).launch {
+                val productDetails = queryProduct(themeId)
+                if (productDetails == null) {
+                    continuation.resume(PurchaseResult.Error("Product not found")) {}
+                    return@launch
+                }
 
-        val flowParams = BillingFlowParams.newBuilder()
-            .setProductDetailsParamsList(
-                listOf(
-                    BillingFlowParams.ProductDetailsParams.newBuilder()
-                        .setProductDetails(productDetails)
-                        .build()
-                )
-            ).build()
+                val flowParams = BillingFlowParams.newBuilder()
+                    .setProductDetailsParamsList(
+                        listOf(
+                            BillingFlowParams.ProductDetailsParams.newBuilder()
+                                .setProductDetails(productDetails)
+                                .build()
+                        )
+                    ).build()
 
-        val activity = context as? Activity ?: return PurchaseResult.Error("No activity context")
-        val billingResult = billingClient.launchBillingFlow(activity, flowParams)
+                val activity = context as? Activity
+                if (activity == null) {
+                    continuation.resume(PurchaseResult.Error("No activity context")) {}
+                    return@launch
+                }
 
-        return if (billingResult.responseCode == BillingClient.BillingResponseCode.OK) {
-            PurchaseResult.Success
-        } else {
-            PurchaseResult.Failure
+                purchaseContinuation = continuation
+
+                val billingResult = billingClient.launchBillingFlow(activity, flowParams)
+                if (billingResult.responseCode != BillingClient.BillingResponseCode.OK) {
+                    continuation.resume(PurchaseResult.Failure) {}
+                    purchaseContinuation = null
+                }
+            }
         }
-    }
 
     override suspend fun restorePurchases(): PurchaseResult {
         val result = billingClient.queryPurchasesAsync(
@@ -70,11 +133,12 @@ class AndroidBillingRepository(
                 .build()
         )
         val purchases = result.purchasesList
-        if (purchases.isNotEmpty()) {
+        return if (purchases.isNotEmpty()) {
             handlePurchases(purchases)
-            return PurchaseResult.Success
+            PurchaseResult.Success
+        } else {
+            PurchaseResult.Failure
         }
-        return PurchaseResult.Failure
     }
 
     private suspend fun queryProduct(productId: String): ProductDetails? {
@@ -101,10 +165,16 @@ class AndroidBillingRepository(
                     .build()
                 billingClient.acknowledgePurchase(params) {}
 
-                val themeId = purchase.products.firstOrNull() ?: return@forEach
-                GlobalScope.launch {
-                    themeRepository.purchaseTheme(themeId)
+                val themeId = purchase.products.firstOrNull()
+                if (themeId != null) {
+                    CoroutineScope(Dispatchers.IO).launch {
+                        themeRepository.purchaseTheme(themeId)
+                        themeRepository.setCurrentTheme(themeId)
+                    }
                 }
+
+                purchaseContinuation?.resume(PurchaseResult.Success) {}
+                purchaseContinuation = null
             }
         }
     }

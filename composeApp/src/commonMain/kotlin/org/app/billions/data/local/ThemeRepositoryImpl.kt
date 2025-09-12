@@ -25,22 +25,75 @@ class ThemeRepositoryImpl(private val db: BillionS) : ThemeRepository {
         }
     }
 
+    override suspend fun getThemeById(id: String): Theme? = withContext(Dispatchers.Default) {
+        queries.getThemes().executeAsList().find { it.id == id }?.let {
+            Theme(
+                id = it.id,
+                name = it.name,
+                isPurchased = it.isPurchased != 0L,
+                backgroundRes = it.backgroundRes ?: "default_background",
+                logoRes = it.logoRes ?: "default_logo",
+                monocleRes = it.monocleRes ?: "default_monocle",
+                primaryColor = it.primaryColor ?: 0xFF001F3F,
+                splashText = it.splashText ?: ""
+            )
+        }
+    }
+
     override suspend fun purchaseTheme(themeId: String): Boolean = withContext(Dispatchers.Default) {
         val theme = queries.getThemes().executeAsList().find { it.id == themeId }
-        if (theme != null) {
+        theme?.let {
             queries.insertTheme(
-                id = theme.id,
-                name = theme.name,
+                id = it.id,
+                name = it.name,
                 isPurchased = 1,
-                backgroundRes = theme.backgroundRes,
-                logoRes = theme.logoRes,
-                monocleRes = theme.monocleRes,
-                primaryColor = theme.primaryColor,
-                splashText = theme.splashText
+                backgroundRes = it.backgroundRes,
+                logoRes = it.logoRes,
+                monocleRes = it.monocleRes,
+                primaryColor = it.primaryColor,
+                splashText = it.splashText
             )
             true
+        } ?: false
+    }
+
+    override suspend fun setCurrentTheme(id: String) = withContext(Dispatchers.Default) {
+        queries.insertCurrentTheme(id)
+    }
+
+    override suspend fun getCurrentTheme(): Theme = withContext(Dispatchers.Default) {
+        val themeId = queries.getCurrentThemeId()?.executeAsOneOrNull()
+        val theme = themeId?.let { getThemeById(it) }
+        if (theme != null && theme.isPurchased) {
+            theme
         } else {
-            false
+            getThemes().first { it.isPurchased }
+        }
+    }
+
+    override suspend fun initializeThemes() {
+        val existing = queries.getThemes().executeAsList()
+        if (existing.isEmpty()) {
+            queries.insertTheme(
+                "dark_lime", "Dark Lime", 1,
+                "bg_dark_lime", "logo_dark_lime", "monocle_dark_lime",
+                0xFF001F3F, "Let’s go!"
+            )
+            queries.insertTheme(
+                "neon_coral", "Neon Coral", 0,
+                "bg_neon_coral", "logo_neon_coral", "monocle_neon_coral",
+                0xFFFF4081, "Burn bright!"
+            )
+            queries.insertTheme(
+                "royal_blue", "Royal Blue", 0,
+                "bg_royal_blue", "logo_royal_blue", "monocle_royal_blue",
+                0xFF3F51B5, "Stay sharp!"
+            )
+            queries.insertTheme(
+                "graphite_gold", "Graphite Gold", 0,
+                "bg_graphite_gold", "logo_graphite_gold", "monocle_graphite_gold",
+                0xFFFFD700, "Shine on!"
+            )
         }
     }
 }

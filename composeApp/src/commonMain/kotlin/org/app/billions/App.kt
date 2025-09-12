@@ -6,6 +6,9 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import org.app.billions.data.model.LocalAppTheme
+import org.app.billions.data.model.toResources
+import org.app.billions.data.repository.ThemeRepository
 import org.app.billions.notifications.NotificationsDetailScreen
 import org.app.billions.ui.screens.Screen
 import org.app.billions.ui.screens.challenges.ChallengeDetailScreen
@@ -34,7 +37,9 @@ fun App(billingRepository: BillingRepository) {
     val splashScreenViewModel: SplashScreenViewModel = koinViewModel()
     val journalViewModel: JournalViewModel = koinViewModel()
     val challengesViewModel: ChallengesViewModel = koinViewModel()
-
+    val themeRepository: ThemeRepository = getKoin().get()
+    val uiState by splashScreenViewModel.uiState.collectAsState()
+    val currentTheme = uiState.currentTheme?.toResources() ?: LocalAppTheme.current
     NavHost(
         navController = navController,
         startDestination = Screen.SplashScreen.route
@@ -48,59 +53,63 @@ fun App(billingRepository: BillingRepository) {
         }
 
         composable(Screen.MainMenuScreen.route) {
-            DashboardScreen(journalViewModel, navController)
+            DashboardScreen(journalViewModel, navController, splashScreenViewModel)
         }
 
         composable(Screen.ChallengesScreen.route) {
-            ChallengesScreen(navController, challengesViewModel)
+            ChallengesScreen(navController, challengesViewModel, splashScreenViewModel)
         }
 
         composable("challengeDetail") {
-            ChallengeDetailScreen(navController, challengesViewModel)
+            ChallengeDetailScreen(navController, challengesViewModel, splashScreenViewModel)
         }
 
         composable("rewards") {
-            RewardsGalleryScreen(navController, challengesViewModel)
+            RewardsGalleryScreen(navController, challengesViewModel, splashScreenViewModel)
         }
 
         composable(Screen.JournalScreen.route) {
-            JournalScreen(navController, journalViewModel)
+            JournalScreen(navController, journalViewModel, splashScreenViewModel)
         }
 
         composable("entryDetail") {
-            EntryDetailScreen(navController, journalViewModel)
+            EntryDetailScreen(navController, journalViewModel, splashScreenViewModel)
         }
 
         composable(Screen.ComparisonScreen.route) {
             ComparisonScreen(
                 navController = navController,
-                viewModel = journalViewModel
+                viewModel = journalViewModel,
+                splashScreenViewModel = splashScreenViewModel
             )
         }
 
         composable(Screen.SettingsScreen.route) {
-            SettingsScreen(navController)
+            SettingsScreen(navController, splashScreenViewModel)
         }
 
         composable(Screen.InAppPurchaseScreen.route) {
             InAppPurchaseScreen(
                 navController = navController,
-                billingRepository = billingRepository
+                billingRepository = billingRepository,
+                themeRepository = themeRepository,
+                splashScreenViewModel = splashScreenViewModel
             )
         }
 
         composable(Screen.DailyGoalsDetailScreen.route) {
-            DailyGoalsScreen(navController)
+            DailyGoalsScreen(navController, splashScreenViewModel)
         }
 
         composable(Screen.AboutScreen.route) {
-            AboutScreen(navController)
+            AboutScreen(navController, splashScreenViewModel)
         }
 
         composable("notificationsDetail") {
             NotificationsDetailScreen(
                 navController = navController,
-                notificationsManager = getKoin().get()
+                notificationsManager = getKoin().get(),
+                splashScreenViewModel = splashScreenViewModel
             )
         }
     }

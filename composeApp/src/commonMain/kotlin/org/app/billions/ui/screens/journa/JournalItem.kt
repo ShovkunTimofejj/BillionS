@@ -29,6 +29,7 @@ import org.app.billions.data.model.ActivitySample
 
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.layout.*
@@ -43,7 +44,22 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
+import billions.composeapp.generated.resources.Res
+import billions.composeapp.generated.resources.ic_calories_dark_lime
+import billions.composeapp.generated.resources.ic_calories_graphite_gold
+import billions.composeapp.generated.resources.ic_calories_neon_coral
+import billions.composeapp.generated.resources.ic_calories_royal_blue
+import billions.composeapp.generated.resources.ic_distance_dark_lime
+import billions.composeapp.generated.resources.ic_distance_graphite_gold
+import billions.composeapp.generated.resources.ic_distance_neon_coral
+import billions.composeapp.generated.resources.ic_distance_royal_blue
+import billions.composeapp.generated.resources.ic_steps_dark_lime
+import billions.composeapp.generated.resources.ic_steps_graphite_gold
+import billions.composeapp.generated.resources.ic_steps_neon_coral
+import billions.composeapp.generated.resources.ic_steps_royal_blue
 import kotlinx.coroutines.launch
+import org.app.billions.data.model.Theme
+import org.jetbrains.compose.resources.painterResource
 import kotlin.math.abs
 import kotlin.math.pow
 import kotlin.math.round
@@ -55,15 +71,41 @@ fun JournalItem(
     onClick: () -> Unit,
     onEdit: () -> Unit,
     onDelete: () -> Unit,
+    currentTheme: Theme?,
+    cardColor: Color = MaterialTheme.colorScheme.surface,
+    contentColor: Color = MaterialTheme.colorScheme.onSurface,
     swipeThreshold: Float = 140f
 ) {
     val scope = rememberCoroutineScope()
     val offsetX = remember { Animatable(0f) }
 
+    val stepsIconRes = when (currentTheme?.id) {
+        "dark_lime" -> Res.drawable.ic_steps_dark_lime
+        "neon_coral" -> Res.drawable.ic_steps_neon_coral
+        "royal_blue" -> Res.drawable.ic_steps_royal_blue
+        "graphite_gold" -> Res.drawable.ic_steps_graphite_gold
+        else -> Res.drawable.ic_steps_dark_lime
+    }
+
+    val distanceIconRes = when (currentTheme?.id) {
+        "dark_lime" -> Res.drawable.ic_distance_dark_lime
+        "neon_coral" -> Res.drawable.ic_distance_neon_coral
+        "royal_blue" -> Res.drawable.ic_distance_royal_blue
+        "graphite_gold" -> Res.drawable.ic_distance_graphite_gold
+        else -> Res.drawable.ic_distance_dark_lime
+    }
+
+    val caloriesIconRes = when (currentTheme?.id) {
+        "dark_lime" -> Res.drawable.ic_calories_dark_lime
+        "neon_coral" -> Res.drawable.ic_calories_neon_coral
+        "royal_blue" -> Res.drawable.ic_calories_royal_blue
+        "graphite_gold" -> Res.drawable.ic_calories_graphite_gold
+        else -> Res.drawable.ic_calories_dark_lime
+    }
+
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .background(Color.Transparent)
             .pointerInput(Unit) {
                 detectHorizontalDragGestures(
                     onDragEnd = {
@@ -96,7 +138,7 @@ fun JournalItem(
                 Modifier
                     .weight(1f)
                     .fillMaxHeight()
-                    .background(Color(0xFF1976D2)),
+                    .background(Color.Transparent),
                 contentAlignment = Alignment.CenterStart
             ) {
                 Icon(
@@ -110,7 +152,7 @@ fun JournalItem(
                 Modifier
                     .weight(1f)
                     .fillMaxHeight()
-                    .background(Color(0xFFD32F2F)),
+                    .background(Color.Transparent),
                 contentAlignment = Alignment.CenterEnd
             ) {
                 Icon(
@@ -129,21 +171,31 @@ fun JournalItem(
                 .fillMaxWidth()
                 .padding(horizontal = 8.dp, vertical = 6.dp)
                 .clickable(onClick = onClick),
+            colors = CardDefaults.cardColors(
+                containerColor = cardColor,
+                contentColor = contentColor
+            ),
             elevation = CardDefaults.cardElevation(defaultElevation = 6.dp)
         ) {
             Row(Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
-                val icon = when {
-                    entry.steps > 0 -> Icons.Default.DirectionsWalk
-                    entry.distanceMeters > 0 -> Icons.Default.Map
-                    else -> Icons.Default.LocalFireDepartment
+                val iconPainter = when {
+                    entry.steps > 0 -> painterResource(stepsIconRes)
+                    entry.distanceMeters > 0 -> painterResource(distanceIconRes)
+                    else -> painterResource(caloriesIconRes)
                 }
-                Icon(icon, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
+
+                Image(
+                    painter = iconPainter,
+                    contentDescription = null,
+                    modifier = Modifier.size(24.dp)
+                )
+
                 Spacer(Modifier.width(12.dp))
                 Column(Modifier.weight(1f)) {
                     Text(
                         entry.date.date.toString(),
                         style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        color = contentColor.copy(alpha = 0.7f)
                     )
                     Text(
                         buildString {
@@ -153,15 +205,16 @@ fun JournalItem(
                         },
                         style = MaterialTheme.typography.bodyMedium,
                         maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
+                        overflow = TextOverflow.Ellipsis,
+                        color = contentColor
                     )
                     Text(
                         entry.source,
                         style = MaterialTheme.typography.bodySmall,
-                        color = Color.Gray
+                        color = contentColor.copy(alpha = 0.5f)
                     )
                 }
-                Icon(Icons.Default.ChevronRight, contentDescription = null)
+                Icon(Icons.Default.ChevronRight, contentDescription = null, tint = contentColor)
             }
         }
     }

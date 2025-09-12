@@ -12,16 +12,26 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 
 @Composable
-fun PrimaryButton(text: String, onClick: () -> Unit) {
+fun PrimaryButton(
+    text: String,
+    onClick: () -> Unit,
+    backgroundColor: Color = Color(0xFF00FF00),
+    textColor: Color = Color.Black
+) {
     Button(
         onClick = onClick,
         modifier = Modifier
             .fillMaxWidth()
             .height(52.dp),
         colors = ButtonDefaults.buttonColors(
-            containerColor = Color(0xFF00FF00)
+            containerColor = backgroundColor
         )
     ) {
-        Text(text, color = Color.Black, fontWeight = FontWeight.Bold)
+        Text(
+            text,
+            color = textColor,
+            fontWeight = FontWeight.Bold
+        )
     }
 }
+

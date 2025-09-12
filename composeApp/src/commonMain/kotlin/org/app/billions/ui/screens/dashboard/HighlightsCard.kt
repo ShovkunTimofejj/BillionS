@@ -17,7 +17,12 @@ import androidx.compose.ui.unit.sp
 import org.app.billions.data.model.ActivitySample
 
 @Composable
-fun HighlightsCard(entries: List<ActivitySample>, color: Color, onClick: () -> Unit) {
+fun HighlightsCard(
+    entries: List<ActivitySample>,
+    contentColor: Color,
+    cardBackground: Color,
+    onClick: () -> Unit
+) {
     val bestDay = entries.maxByOrNull { it.steps }?.steps ?: 0
     val weeklyTarget = (entries.sumOf { it.steps } / 70000.0 * 100).toInt()
 
@@ -26,15 +31,20 @@ fun HighlightsCard(entries: List<ActivitySample>, color: Color, onClick: () -> U
             .fillMaxWidth()
             .padding(horizontal = 16.dp, vertical = 8.dp),
         shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(containerColor = Color(0xFF002A55))
+        colors = CardDefaults.cardColors(containerColor = cardBackground)
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
-            Text("Highlights", color = Color.White, fontSize = 18.sp)
+            Text("Highlights", color = contentColor, fontSize = 18.sp)
             Spacer(Modifier.height(8.dp))
-            Text("Best day this week: $bestDay steps", color = color)
-            Text("X% to weekly target: $weeklyTarget%", color = color)
+            Text("Best day this week: $bestDay steps", color = contentColor)
+            Text("X% to weekly target: $weeklyTarget%", color = contentColor)
             Spacer(Modifier.height(8.dp))
-            PrimaryButton("View Comparison", onClick)
+            PrimaryButton(
+                text = "View Comparison",
+                backgroundColor = contentColor.copy(alpha = 0.2f),
+                textColor = contentColor,
+                onClick = onClick
+            )
         }
     }
 }

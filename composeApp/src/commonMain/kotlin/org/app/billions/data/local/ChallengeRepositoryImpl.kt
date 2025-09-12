@@ -158,10 +158,10 @@ class ChallengeRepositoryImpl(
     private suspend fun calculateStreakBuilder14(challenge: Challenge): Double {
         if (challenge.startDate == 0L) return 0.0
 
-        val fromStr = Instant.fromEpochMilliseconds(challenge.startDate).toString()
-        val toStr = Clock.System.now().toString()
-
-        val samples = activityRepository.getSamplesBetween(fromStr, toStr)
+        val samples = activityRepository.getSamplesBetween(
+            Instant.fromEpochMilliseconds(challenge.startDate).toString(),
+            Clock.System.now().toString()
+        )
         val samplesByDay = samples.groupBy { it.date.date }
 
         val minPerDay = 5000
@@ -171,8 +171,10 @@ class ChallengeRepositoryImpl(
 
         val startDate = Instant.fromEpochMilliseconds(challenge.startDate)
             .toLocalDateTime(TimeZone.currentSystemDefault()).date
+        val today = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date
+        val daysPassed = (today - startDate).days.coerceIn(0, totalDays)
 
-        for (i in 0 until totalDays) {
+        for (i in 0 until daysPassed) {
             val date = startDate.plus(DatePeriod(days = i))
             val steps = samplesByDay[date]?.sumOf { it.steps } ?: 0
 
@@ -181,8 +183,6 @@ class ChallengeRepositoryImpl(
             } else if (jokers > 0) {
                 jokers--
                 successDays++
-            } else {
-                break
             }
         }
 

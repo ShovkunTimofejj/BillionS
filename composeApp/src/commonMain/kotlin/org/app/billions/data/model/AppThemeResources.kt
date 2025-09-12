@@ -5,6 +5,7 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.key.Key.Companion.R
 
 @Immutable
 data class AppThemeResources(
@@ -17,7 +18,6 @@ data class AppThemeResources(
     val accentColor: Color,
     val splashText: String
 )
-
 val LocalAppTheme = compositionLocalOf<AppThemeResources> {
     AppThemeResources(
         id = "default",
