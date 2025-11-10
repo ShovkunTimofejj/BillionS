@@ -37,6 +37,7 @@ kotlin {
             implementation(libs.koin.android)
             implementation(libs.koin.android.compat)
             implementation(libs.koin.androidx.compose)
+            implementation("com.android.billingclient:billing-ktx:6.0.1")
         }
         commonMain.dependencies {
             implementation(compose.runtime)
@@ -61,6 +62,7 @@ kotlin {
             implementation(libs.multiplatform.settings.no.arg)
             implementation(libs.koin.compose.viewmodel)
             implementation(compose.materialIconsExtended)
+            api(libs.kmpnotifier)
 
         }
         iosMain.dependencies {

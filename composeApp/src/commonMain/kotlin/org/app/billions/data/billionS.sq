@@ -2,22 +2,20 @@ CREATE TABLE UserEntity (
     id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
     nickname TEXT NOT NULL,
     avatar TEXT,
-    units TEXT NOT NULL,          -- Metric / Imperial
+    units TEXT NOT NULL,
     timezone TEXT NOT NULL,
-    subscription TEXT NOT NULL    -- Free / Premium
+    subscription TEXT NOT NULL
 );
 
--- Таблица активностей
 CREATE TABLE ActivitySampleEntity (
     id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
     date TEXT NOT NULL,
     steps INTEGER NOT NULL,
     distanceMeters REAL NOT NULL,
     activeEnergyKcal REAL NOT NULL,
-    source TEXT NOT NULL          -- manual / device / api
+    source TEXT NOT NULL
 );
 
--- Таблица сводок по дням
 CREATE TABLE DailySummaryEntity (
     id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
     date TEXT NOT NULL,
@@ -29,7 +27,6 @@ CREATE TABLE DailySummaryEntity (
     streak INTEGER NOT NULL
 );
 
--- Глобальный счётчик
 CREATE TABLE GlobalCounterEntity (
     id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
     totalSteps INTEGER NOT NULL,
@@ -38,21 +35,51 @@ CREATE TABLE GlobalCounterEntity (
     lastUpdate TEXT NOT NULL
 );
 
--- Таблица челленджей
 CREATE TABLE ChallengeEntity (
     id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
     type TEXT NOT NULL,
     status TEXT NOT NULL,
-    progress REAL NOT NULL
+    progress REAL NOT NULL,
+    goal REAL NOT NULL,
+    daysLeft INTEGER NOT NULL,
+    reward TEXT NOT NULL,
+    startDate INTEGER NOT NULL
 );
 
--- Таблица тем
 CREATE TABLE ThemeEntity (
     id TEXT NOT NULL PRIMARY KEY,
     name TEXT NOT NULL,
-    isPurchased INTEGER NOT NULL
+    isPurchased INTEGER NOT NULL,
+    backgroundRes TEXT NOT NULL,
+    logoRes TEXT NOT NULL,
+    monocleRes TEXT NOT NULL,
+    primaryColor INTEGER NOT NULL,
+    splashText TEXT NOT NULL
 );
 
+CREATE TABLE CurrentThemeEntity (
+    themeId TEXT NOT NULL PRIMARY KEY
+);
+
+INSERT INTO ThemeEntity(id, name, isPurchased, backgroundRes, logoRes, monocleRes, primaryColor, splashText)
+VALUES
+('dark_lime', 'Dark Lime', 1, 'bg_dark_lime', 'logo_dark_lime', 'monocle_dark_lime', 4278255360, 'Let’s go!'),
+('neon_coral', 'Neon Coral', 0, 'bg_neon_coral', 'logo_neon_coral', 'monocle_neon_coral', 4294936353, 'Burn bright!'),
+('royal_blue', 'Royal Blue', 0, 'bg_royal_blue', 'logo_royal_blue', 'monocle_royal_blue', 4283782485, 'Stay sharp!'),
+('graphite_gold', 'Graphite Gold', 0, 'bg_graphite_gold', 'logo_graphite_gold', 'monocle_graphite_gold', 4294956800, 'Shine on!');
+
+CREATE TABLE DailyGoals (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    stepGoal INTEGER NOT NULL,
+    distanceGoal INTEGER NOT NULL,
+    calorieGoal INTEGER NOT NULL
+);
+
+insertCurrentTheme:
+INSERT OR REPLACE INTO CurrentThemeEntity(themeId) VALUES (?);
+
+getCurrentThemeId:
+SELECT themeId FROM CurrentThemeEntity LIMIT 1;
 
 getUser:
 SELECT * FROM UserEntity LIMIT 1;
@@ -74,14 +101,47 @@ VALUES (?, ?, ?, ?, ?);
 getChallenges:
 SELECT * FROM ChallengeEntity;
 
+getActivityBetween:
+SELECT * FROM ActivitySampleEntity
+WHERE date BETWEEN ? AND ?;
+
+updateChallenge:
+UPDATE ChallengeEntity
+SET type = ?, status = ?, progress = ?, goal = ?, daysLeft = ?, reward = ?, startDate = ?
+WHERE id = ?;
+
 insertChallenge:
-INSERT INTO ChallengeEntity(type, status, progress) VALUES (?, ?, ?);
+INSERT INTO ChallengeEntity(id, type, status, progress, goal, daysLeft, reward, startDate) VALUES (?, ?, ?, ?, ?, ?, ?, ?);
 
 getThemes:
 SELECT * FROM ThemeEntity;
 
+getAllActivity:
+SELECT * FROM ActivitySampleEntity;
+
+deleteActivity:
+DELETE FROM ActivitySampleEntity WHERE id = ?;
+
+updateActivity:
+UPDATE ActivitySampleEntity
+SET date = ?, steps = ?, distanceMeters = ?, activeEnergyKcal = ?, source = ?
+WHERE id = ?;
+
+getActivityById:
+SELECT * FROM ActivitySampleEntity WHERE id = ?;
+
 insertTheme:
-INSERT OR REPLACE INTO ThemeEntity(id, name, isPurchased)
+INSERT OR REPLACE INTO ThemeEntity(
+    id, name, isPurchased, backgroundRes, logoRes, monocleRes, primaryColor, splashText
+) VALUES (?, ?, ?, ?, ?, ?, ?, ?);
+
+selectDailyGoals:
+SELECT * FROM DailyGoals LIMIT 1;
+
+insertDailyGoals:
+INSERT INTO DailyGoals(stepGoal, distanceGoal, calorieGoal)
 VALUES (?, ?, ?);
 
+clearDailyGoals:
+DELETE FROM DailyGoals;
 

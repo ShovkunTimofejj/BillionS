@@ -10,5 +10,6 @@ data class ActivitySample(
     val steps: Long,
     val distanceMeters: Double,
     val activeEnergyKcal: Double,
-    val source: String // manual, device, api
+    val source: String, // manual, device, api
+    val note: String = ""
 )

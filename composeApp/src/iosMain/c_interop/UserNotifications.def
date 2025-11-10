@@ -1,0 +1,6 @@
+language = Objective-C
+headers = <UserNotifications/UserNotifications.h>
+compilerOpts = -framework UserNotifications
+linkerOpts = -framework UserNotifications
+
+
