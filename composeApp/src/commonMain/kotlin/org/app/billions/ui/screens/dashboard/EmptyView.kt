@@ -2,8 +2,10 @@ package org.app.billions.ui.screens.dashboard
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -18,15 +20,18 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import billions.composeapp.generated.resources.Res
 import billions.composeapp.generated.resources.logo_default
+import billions.composeapp.generated.resources.logo_default_empty
 import billions.composeapp.generated.resources.logo_graphite_gold
+import billions.composeapp.generated.resources.logo_graphite_gold_empty
 import billions.composeapp.generated.resources.logo_neon_coral
+import billions.composeapp.generated.resources.logo_neon_coral_empty
 import billions.composeapp.generated.resources.logo_royal_blue
+import billions.composeapp.generated.resources.logo_royal_blue_empty
 import org.app.billions.data.model.Theme
 import org.jetbrains.compose.resources.painterResource
 
 @Composable
 fun EmptyView(
-    message: String,
     onAddEntry: () -> Unit,
     currentTheme: Theme?
 ) {
@@ -39,45 +44,39 @@ fun EmptyView(
     }
 
     val logoRes = when (currentTheme?.id) {
-        "dark_lime" -> Res.drawable.logo_default
-        "neon_coral" -> Res.drawable.logo_neon_coral
-        "royal_blue" -> Res.drawable.logo_royal_blue
-        "graphite_gold" -> Res.drawable.logo_graphite_gold
-        else -> Res.drawable.logo_default
+        "dark_lime" -> Res.drawable.logo_default_empty
+        "neon_coral" -> Res.drawable.logo_neon_coral_empty
+        "royal_blue" -> Res.drawable.logo_royal_blue_empty
+        "graphite_gold" -> Res.drawable.logo_graphite_gold_empty
+        else -> Res.drawable.logo_default_empty
     }
 
-    Column(
+    Box(
         modifier = Modifier
-            .fillMaxWidth()
-            .padding(16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
+            .fillMaxSize(),
+        contentAlignment = Alignment.Center
     ) {
-        Image(
-            painter = painterResource(logoRes),
-            contentDescription = "Logo",
-            modifier = Modifier.size(150.dp)
-        )
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(40.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            Image(
+                painter = painterResource(logoRes),
+                contentDescription = "Logo",
+                modifier = Modifier.size(250.dp)
+            )
 
-        Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(8.dp))
 
-        Text(
-            message,
-            color = Color.White,
-            fontSize = 16.sp,
-            textAlign = TextAlign.Center
-        )
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        PrimaryButton(
-            text = "Add First Entry",
-            onClick = onAddEntry,
-            backgroundColor = buttonColor.copy(alpha = 0.2f),
-            textColor = buttonColor
-        )
+            PrimaryButtonForEmpty(
+                text = "Add Entry",
+                onClick = onAddEntry,
+                backgroundColor = buttonColor.copy(alpha = 0.2f),
+                textColor = buttonColor
+            )
+        }
     }
 }
-
-
-

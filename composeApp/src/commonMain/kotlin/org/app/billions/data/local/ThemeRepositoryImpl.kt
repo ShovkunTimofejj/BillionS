@@ -26,16 +26,16 @@ class ThemeRepositoryImpl(private val db: BillionS) : ThemeRepository {
     }
 
     override suspend fun getThemeById(id: String): Theme? = withContext(Dispatchers.Default) {
-        queries.getThemes().executeAsList().find { it.id == id }?.let {
+        queries.getThemeById(id).executeAsOneOrNull()?.let {
             Theme(
                 id = it.id,
                 name = it.name,
                 isPurchased = it.isPurchased != 0L,
-                backgroundRes = it.backgroundRes ?: "default_background",
-                logoRes = it.logoRes ?: "default_logo",
-                monocleRes = it.monocleRes ?: "default_monocle",
-                primaryColor = it.primaryColor ?: 0xFF001F3F,
-                splashText = it.splashText ?: ""
+                backgroundRes = it.backgroundRes,
+                logoRes = it.logoRes,
+                monocleRes = it.monocleRes,
+                primaryColor = it.primaryColor,
+                splashText = it.splashText
             )
         }
     }
@@ -58,17 +58,22 @@ class ThemeRepositoryImpl(private val db: BillionS) : ThemeRepository {
     }
 
     override suspend fun setCurrentTheme(id: String) = withContext(Dispatchers.Default) {
+        queries.clearCurrentTheme()
         queries.insertCurrentTheme(id)
     }
 
     override suspend fun getCurrentTheme(): Theme = withContext(Dispatchers.Default) {
         val themeId = queries.getCurrentThemeId()?.executeAsOneOrNull()
-        val theme = themeId?.let { getThemeById(it) }
-        if (theme != null && theme.isPurchased) {
-            theme
+
+        if (themeId != null) {
+            getThemeById(themeId) ?: getFallbackTheme()
         } else {
-            getThemes().first { it.isPurchased }
+            getFallbackTheme()
         }
+    }
+
+    private suspend fun getFallbackTheme(): Theme {
+        return getThemeById("dark_lime")!!
     }
 
     override suspend fun initializeThemes() {

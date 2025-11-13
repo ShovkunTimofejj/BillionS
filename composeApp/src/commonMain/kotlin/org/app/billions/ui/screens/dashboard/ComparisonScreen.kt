@@ -4,11 +4,14 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -28,51 +31,70 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import billions.composeapp.generated.resources.Res
 import billions.composeapp.generated.resources.bg_dashboard_dark_lime
 import billions.composeapp.generated.resources.bg_dashboard_graphite_gold
 import billions.composeapp.generated.resources.bg_dashboard_neon_coral
 import billions.composeapp.generated.resources.bg_dashboard_royal_blue
+import billions.composeapp.generated.resources.ic_calories_dark_lime
+import billions.composeapp.generated.resources.ic_calories_graphite_gold
+import billions.composeapp.generated.resources.ic_calories_neon_coral
+import billions.composeapp.generated.resources.ic_calories_royal_blue
+import billions.composeapp.generated.resources.ic_distance_dark_lime
+import billions.composeapp.generated.resources.ic_distance_graphite_gold
+import billions.composeapp.generated.resources.ic_distance_neon_coral
+import billions.composeapp.generated.resources.ic_distance_royal_blue
+import billions.composeapp.generated.resources.ic_steps_dark_lime
+import billions.composeapp.generated.resources.ic_steps_graphite_gold
+import billions.composeapp.generated.resources.ic_steps_neon_coral
+import billions.composeapp.generated.resources.ic_steps_royal_blue
 import kotlinx.datetime.DatePeriod
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.minus
 import kotlinx.datetime.toLocalDateTime
 import kotlinx.datetime.*
+import org.app.billions.data.model.Theme
+import org.app.billions.ui.screens.buttonBar.AppBottomBar
 import org.app.billions.ui.screens.viewModel.JournalViewModel
 import org.app.billions.ui.screens.viewModel.SplashScreenViewModel
+import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.painterResource
 import kotlin.time.ExperimentalTime
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalTime::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ComparisonScreen(
     navController: NavController,
     viewModel: JournalViewModel,
     splashScreenViewModel: SplashScreenViewModel
 ) {
-    val state by viewModel.state
-
     val uiState by splashScreenViewModel.uiState.collectAsState()
     val currentTheme = uiState.currentTheme
+    val goals = viewModel.dailyGoals.value
 
     val contentColor = when (currentTheme?.id) {
-        "dark_lime" -> Color(0xFF00FF00)
-        "neon_coral" -> Color(0xFFFF8FA0)
-        "royal_blue" -> Color(0xFF8FCFFF)
+        "dark_lime" -> Color(0xFFB6FE03)
+        "neon_coral" -> Color(0xFFFF2C52)
+        "royal_blue" -> Color(0xFF699BFF)
         "graphite_gold" -> Color(0xFFFFD700)
-        else -> Color(0xFF00FF00)
+        else -> Color(0xFFB6FE03)
     }
 
     val cardColor = when (currentTheme?.id) {
@@ -83,57 +105,81 @@ fun ComparisonScreen(
         else -> Color(0xFF1C2A3A)
     }
 
-    val backgroundRes by remember(currentTheme) {
-        derivedStateOf {
-            when (currentTheme?.id) {
-                "dark_lime" -> Res.drawable.bg_dashboard_dark_lime
-                "neon_coral" -> Res.drawable.bg_dashboard_neon_coral
-                "royal_blue" -> Res.drawable.bg_dashboard_royal_blue
-                "graphite_gold" -> Res.drawable.bg_dashboard_graphite_gold
-                else -> Res.drawable.bg_dashboard_dark_lime
-            }
-        }
+    val backgroundRes = when (currentTheme?.id) {
+        "dark_lime" -> Res.drawable.bg_dashboard_dark_lime
+        "neon_coral" -> Res.drawable.bg_dashboard_neon_coral
+        "royal_blue" -> Res.drawable.bg_dashboard_royal_blue
+        "graphite_gold" -> Res.drawable.bg_dashboard_graphite_gold
+        else -> Res.drawable.bg_dashboard_dark_lime
     }
 
-    val today: LocalDate = remember {
-        Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date
-    }
-    val weekStart = remember(today) { today.minus(DatePeriod(days = 6)) }
-
-    val todaySteps = remember(state.entries, today) {
-        state.entries
-            .mapNotNull { e ->
-                val entryDate: LocalDate? = when (val d = e.date) {
-                    is LocalDateTime -> d.date
-                    is LocalDate -> d
-                    is String -> runCatching { LocalDate.parse(d) }.getOrNull()
-                    else -> null
-                }
-                entryDate?.let { it to e.steps.toInt() }
-            }
-            .filter { (date, _) -> date == today }
-            .sumOf { it.second }
+    val barColor = when (currentTheme?.id) {
+        "dark_lime" -> Color(0x801C2A3A)
+        "neon_coral" -> Color(0x80431C2E)
+        "royal_blue" -> Color(0x801D3B5C)
+        "graphite_gold" -> Color(0x80383737)
+        else -> Color(0x801C2A3A)
     }
 
-    val (bestDayDate, bestDaySteps) = remember(state.entries, weekStart, today) {
-        val byDay: Map<LocalDate, Int> = state.entries.asSequence()
-            .mapNotNull { e ->
-                runCatching {
-                    (if (e.date is LocalDateTime) (e.date as LocalDateTime).date else LocalDate.parse(e.date.toString())) to e.steps.toInt()
-                }.getOrNull()
-            }
-            .filter { (d, _) -> d >= weekStart && d <= today }
-            .groupBy({ it.first }, { it.second })
-            .mapValues { it.value.sum() }
+    val today = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date
+    var selectedBottomNavIndex by remember { mutableStateOf(0) }
 
-        val best = byDay.maxByOrNull { it.value }
-        (best?.key ?: today) to (best?.value ?: 0)
+    LaunchedEffect(Unit) {
+        viewModel.loadAllEntries()
     }
+
+    val allEntries by viewModel.allEntries
+    val todayEntries = allEntries.filter {
+        (it.date as? LocalDateTime)?.date == today
+    }
+
+    val todaySteps = todayEntries.sumOf { it.steps }
+    val todayDistance = todayEntries.sumOf { it.distanceMeters }
+    val todayCalories = todayEntries.sumOf { it.activeEnergyKcal }
+
+    val groupedByDate = remember(allEntries) {
+        allEntries.groupBy {
+            (it.date as? LocalDateTime)?.date
+                ?: runCatching { LocalDate.parse(it.date.toString()) }.getOrNull()
+        }.filterKeys { it != null }
+    }
+
+    data class DayStats(
+        val steps: Long,
+        val distance: Double,
+        val calories: Double,
+        val score: Float
+    )
+
+    val dailyStats = groupedByDate.mapValues { (_, entries) ->
+        val steps = entries.sumOf { it.steps }
+        val distance = entries.sumOf { it.distanceMeters }
+        val calories = entries.sumOf { it.activeEnergyKcal }
+
+        val stepsProgress = (steps.toFloat() / goals.stepGoal.coerceAtLeast(1)).coerceIn(0f, 1f)
+        val distanceProgress = (distance.toFloat() / goals.distanceGoal.coerceAtLeast(1)).coerceIn(0f, 1f)
+        val caloriesProgress = (calories.toFloat() / goals.calorieGoal.coerceAtLeast(1)).coerceIn(0f, 1f)
+
+        val score = (stepsProgress + distanceProgress + caloriesProgress) / 3f
+        DayStats(steps, distance, calories, score)
+    }
+
+    val bestDayEntry = dailyStats.maxByOrNull { it.value.score }
+    val bestDayDate = bestDayEntry?.key
+    val bestDayStats = bestDayEntry?.value ?: DayStats(0, 0.0, 0.0, 0f)
+
+    val todayStepsProgress = (todaySteps.toFloat() / goals.stepGoal).coerceIn(0f, 1f)
+    val todayDistanceProgress = (todayDistance.toFloat() / goals.distanceGoal).coerceIn(0f, 1f)
+    val todayCaloriesProgress = (todayCalories.toFloat() / goals.calorieGoal).coerceIn(0f, 1f)
+
+    val bestStepsProgress = (bestDayStats.steps.toFloat() / goals.stepGoal).coerceIn(0f, 1f)
+    val bestDistanceProgress = (bestDayStats.distance.toFloat() / goals.distanceGoal).coerceIn(0f, 1f)
+    val bestCaloriesProgress = (bestDayStats.calories.toFloat() / goals.calorieGoal).coerceIn(0f, 1f)
 
     Box(modifier = Modifier.fillMaxSize()) {
         Image(
             painter = painterResource(backgroundRes),
-            contentDescription = "Background",
+            contentDescription = null,
             modifier = Modifier.fillMaxSize(),
             contentScale = ContentScale.Crop
         )
@@ -141,13 +187,29 @@ fun ComparisonScreen(
         Scaffold(
             topBar = {
                 TopAppBar(
-                    title = { Text("Comparison", color = Color.White) },
+                    title = {
+                        Text(
+                            "Best day vs Today",
+                            color = Color.White,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 20.sp
+                        )
+                    },
                     navigationIcon = {
                         IconButton(onClick = { navController.popBackStack() }) {
-                            Icon(Icons.Default.ArrowBack, contentDescription = "Back", tint = Color.White)
+                            Icon(Icons.Default.ArrowBack, contentDescription = null, tint = Color.White)
                         }
                     },
                     colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent)
+                )
+            },
+            bottomBar = {
+                AppBottomBar(
+                    navController = navController,
+                    selectedTabIndex = selectedBottomNavIndex,
+                    onTabSelected = { selectedBottomNavIndex = it },
+                    barColor = barColor,
+                    currentTheme = currentTheme
                 )
             },
             containerColor = Color.Transparent
@@ -156,67 +218,142 @@ fun ComparisonScreen(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(padding)
-                    .padding(16.dp)
+                    .padding(horizontal = 16.dp, vertical = 8.dp)
                     .verticalScroll(rememberScrollState()),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = CardDefaults.cardColors(containerColor = cardColor),
-                    shape = RoundedCornerShape(12.dp)
-                ) {
-                    Column(Modifier.padding(16.dp)) {
-                        Text("Best Day", color = Color.White, fontWeight = FontWeight.SemiBold)
-                        Spacer(Modifier.height(6.dp))
-                        Text(
-                            "${bestDaySteps} steps",
-                            color = contentColor,
-                            style = MaterialTheme.typography.headlineSmall,
-                            fontWeight = FontWeight.Bold
-                        )
-                        Text("Date: $bestDayDate", color = Color.LightGray)
-                    }
-                }
-
-                Spacer(Modifier.height(16.dp))
-
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = CardDefaults.cardColors(containerColor = cardColor),
-                    shape = RoundedCornerShape(12.dp)
-                ) {
-                    Column(Modifier.padding(16.dp)) {
-                        Text("Today", color = Color.White, fontWeight = FontWeight.SemiBold)
-                        Spacer(Modifier.height(6.dp))
-                        Text(
-                            "$todaySteps steps",
-                            color = contentColor,
-                            style = MaterialTheme.typography.headlineSmall,
-                            fontWeight = FontWeight.Bold
-                        )
-                        Text("Date: $today", color = Color.LightGray)
-                    }
-                }
-
-                Spacer(Modifier.height(24.dp))
-
-                val progress = if (bestDaySteps > 0) todaySteps.toFloat() / bestDaySteps else 0f
-                LinearProgressIndicator(
-                    progress = progress.coerceIn(0f, 1f),
+                ComparisonDayBlock(
+                    label = "Today",
+                    steps = todaySteps,
+                    distance = todayDistance,
+                    calories = todayCalories,
                     color = contentColor,
-                    trackColor = Color.DarkGray,
-                    modifier = Modifier.fillMaxWidth()
+                    cardColor = cardColor,
+                    currentTheme = currentTheme,
+                    stepsProgress = todayStepsProgress,
+                    distanceProgress = todayDistanceProgress,
+                    caloriesProgress = todayCaloriesProgress
                 )
 
                 Spacer(Modifier.height(24.dp))
 
-                PrimaryButton(
-                    text = "Back to Dashboard",
-                    onClick = { navController.popBackStack() },
-                    backgroundColor = contentColor.copy(alpha = 0.2f),
-                    textColor = contentColor
+                ComparisonDayBlock(
+                    label = bestDayDate?.dayOfWeek?.name
+                        ?.lowercase()
+                        ?.replaceFirstChar { it.uppercase() } ?: "Best",
+                    steps = bestDayStats.steps,
+                    distance = bestDayStats.distance,
+                    calories = bestDayStats.calories,
+                    color = contentColor,
+                    cardColor = cardColor,
+                    currentTheme = currentTheme,
+                    stepsProgress = bestStepsProgress,
+                    distanceProgress = bestDistanceProgress,
+                    caloriesProgress = bestCaloriesProgress
                 )
             }
+        }
+    }
+}
+
+
+@Composable
+private fun ComparisonDayBlock(
+    label: String,
+    steps: Long,
+    distance: Double,
+    calories: Double,
+    color: Color,
+    cardColor: Color,
+    currentTheme: Theme?,
+    stepsProgress: Float,
+    distanceProgress: Float,
+    caloriesProgress: Float
+) {
+    val (stepsIcon, distanceIcon, caloriesIcon) = remember(currentTheme) {
+        when (currentTheme?.id) {
+            "dark_lime" -> Triple(
+                Res.drawable.ic_steps_dark_lime,
+                Res.drawable.ic_distance_dark_lime,
+                Res.drawable.ic_calories_dark_lime
+            )
+            "neon_coral" -> Triple(
+                Res.drawable.ic_steps_neon_coral,
+                Res.drawable.ic_distance_neon_coral,
+                Res.drawable.ic_calories_neon_coral
+            )
+            "royal_blue" -> Triple(
+                Res.drawable.ic_steps_royal_blue,
+                Res.drawable.ic_distance_royal_blue,
+                Res.drawable.ic_calories_royal_blue
+            )
+            "graphite_gold" -> Triple(
+                Res.drawable.ic_steps_graphite_gold,
+                Res.drawable.ic_distance_graphite_gold,
+                Res.drawable.ic_calories_graphite_gold
+            )
+            else -> Triple(
+                Res.drawable.ic_steps_dark_lime,
+                Res.drawable.ic_distance_dark_lime,
+                Res.drawable.ic_calories_dark_lime
+            )
+        }
+    }
+
+    val avgProgress = (stepsProgress + distanceProgress + caloriesProgress) / 3f
+
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Text(label, color = Color.White, fontWeight = FontWeight.SemiBold)
+            Spacer(Modifier.height(8.dp))
+            Box(contentAlignment = Alignment.Center) {
+                MultiRingView(
+                    stepsProgress = stepsProgress,
+                    distanceProgress = distanceProgress,
+                    caloriesProgress = caloriesProgress,
+                    color = color,
+                    ringSize = 180.dp
+                )
+                Text(
+                    text = "${(avgProgress * 100).toInt()}%",
+                    color = Color.White,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 18.sp
+                )
+            }
+        }
+
+        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            StatCard(icon = stepsIcon, value = "$steps", color = color, bg = cardColor)
+            StatCard(icon = distanceIcon, value = "${distance.toInt()} km", color = color, bg = cardColor)
+            StatCard(icon = caloriesIcon, value = "${calories.toInt()} kcal", color = color, bg = cardColor)
+        }
+    }
+}
+
+@Composable
+private fun StatCard(icon: DrawableResource, value: String, color: Color, bg: Color) {
+    Card(
+        shape = RoundedCornerShape(10.dp),
+        colors = CardDefaults.cardColors(containerColor = bg),
+        modifier = Modifier.width(100.dp)
+    ) {
+        Column(
+            modifier = Modifier.padding(vertical = 12.dp, horizontal = 8.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Image(
+                painter = painterResource(icon),
+                contentDescription = null,
+                modifier = Modifier.size(22.dp),
+                colorFilter = ColorFilter.tint(color)
+            )
+            Spacer(Modifier.height(4.dp))
+            Text(value, color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.Medium)
         }
     }
 }

@@ -41,13 +41,13 @@ class MainActivity : ComponentActivity() {
             if (isGranted) {
                 Toast.makeText(
                     this,
-                    "Permission for notifications has been received ✅",
+                    "Permission for notifications has been received ",
                     Toast.LENGTH_SHORT
                 ).show()
             } else {
                 Toast.makeText(
                     this,
-                    "Notification permission denied ❌",
+                    "Notification permission denied ",
                     Toast.LENGTH_SHORT
                 ).show()
             }
@@ -64,7 +64,7 @@ class MainActivity : ComponentActivity() {
         billingRepository = AndroidBillingRepository(this, themeRepository)
 
         setContent {
-            App(billingRepository = billingRepository)
+            App()
         }
     }
 

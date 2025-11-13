@@ -24,7 +24,8 @@ class ActivityRepositoryImpl(private val db: BillionS) : ActivityRepository {
             steps = sample.steps,
             distanceMeters = sample.distanceMeters,
             activeEnergyKcal = sample.activeEnergyKcal,
-            source = sample.source
+            source = sample.source,
+            note = sample.note
         )
     }
 
@@ -78,6 +79,7 @@ class ActivityRepositoryImpl(private val db: BillionS) : ActivityRepository {
             distanceMeters = sample.distanceMeters,
             activeEnergyKcal = sample.activeEnergyKcal,
             source = sample.source,
+            note = sample.note,
             id = sample.id
         )
     }
@@ -92,5 +94,6 @@ public fun ActivitySampleEntity.toModel() = ActivitySample(
     steps = steps,
     distanceMeters = distanceMeters,
     activeEnergyKcal = activeEnergyKcal,
-    source = source
+    source = source,
+    note = note
 )

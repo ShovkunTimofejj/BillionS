@@ -16,6 +16,7 @@ import org.app.billions.ui.screens.challenges.ChallengesScreen
 import org.app.billions.ui.screens.challenges.RewardsGalleryScreen
 import org.app.billions.ui.screens.dashboard.ComparisonScreen
 import org.app.billions.ui.screens.dashboard.DashboardScreen
+import org.app.billions.ui.screens.dashboard.TodayRingsScreen
 import org.app.billions.ui.screens.inAppPurchase.BillingRepository
 import org.app.billions.ui.screens.inAppPurchase.InAppPurchaseScreen
 import org.app.billions.ui.screens.journa.EntryDetailScreen
@@ -29,16 +30,18 @@ import org.app.billions.ui.screens.viewModel.ChallengesViewModel
 import org.app.billions.ui.screens.viewModel.JournalViewModel
 import org.app.billions.ui.screens.viewModel.SplashScreenViewModel
 import org.koin.compose.getKoin
+import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
-fun App(billingRepository: BillingRepository) {
+fun App() {
     val navController = rememberNavController()
     val splashScreenViewModel: SplashScreenViewModel = koinViewModel()
     val journalViewModel: JournalViewModel = koinViewModel()
     val challengesViewModel: ChallengesViewModel = koinViewModel()
     val themeRepository: ThemeRepository = getKoin().get()
     val uiState by splashScreenViewModel.uiState.collectAsState()
+    val billingRepository: BillingRepository = koinInject()
     val currentTheme = uiState.currentTheme?.toResources() ?: LocalAppTheme.current
     NavHost(
         navController = navController,
@@ -109,6 +112,13 @@ fun App(billingRepository: BillingRepository) {
             NotificationsDetailScreen(
                 navController = navController,
                 notificationsManager = getKoin().get(),
+                splashScreenViewModel = splashScreenViewModel
+            )
+        }
+        composable(Screen.TodayRings.route) {
+            TodayRingsScreen(
+                navController = navController,
+                viewModel = journalViewModel,
                 splashScreenViewModel = splashScreenViewModel
             )
         }

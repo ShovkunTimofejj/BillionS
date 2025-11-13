@@ -14,35 +14,41 @@ class AndroidNotificationsManager(private val context: Context) : NotificationsM
 
     private val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
 
-    override fun scheduleDailyReminder(hour: Int, minute: Int) {
+    private fun pendingIntent(): PendingIntent {
         val intent = Intent(context, NotificationReceiver::class.java)
-        val pendingIntent = PendingIntent.getBroadcast(
-            context, 0, intent,
+        return PendingIntent.getBroadcast(
+            context,
+            0,
+            intent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
+    }
 
+    override fun scheduleDailyReminder(hour: Int, minute: Int) {
         val calendar = Calendar.getInstance().apply {
             timeInMillis = System.currentTimeMillis()
             set(Calendar.HOUR_OF_DAY, hour)
             set(Calendar.MINUTE, minute)
             set(Calendar.SECOND, 0)
+            set(Calendar.MILLISECOND, 0)
+
+            if (before(Calendar.getInstance())) {
+                add(Calendar.DAY_OF_YEAR, 1)
+            }
         }
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            alarmManager.setExactAndAllowWhileIdle(
-                AlarmManager.RTC_WAKEUP,
-                calendar.timeInMillis,
-                pendingIntent
-            )
-        } else {
-            alarmManager.setExact(AlarmManager.RTC_WAKEUP, calendar.timeInMillis, pendingIntent)
-        }
+        val pi = pendingIntent()
+
+        alarmManager.setRepeating(
+            AlarmManager.RTC_WAKEUP,
+            calendar.timeInMillis,
+            AlarmManager.INTERVAL_DAY,
+            pi
+        )
     }
 
     override fun cancelDailyReminder() {
-        val intent = Intent(context, NotificationReceiver::class.java)
-        val pendingIntent = PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
-        alarmManager.cancel(pendingIntent)
+        alarmManager.cancel(pendingIntent())
     }
 
     override fun setChallengeReminder(enabled: Boolean) {

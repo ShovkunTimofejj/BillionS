@@ -8,10 +8,12 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowBack
@@ -29,8 +31,13 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
@@ -52,8 +59,10 @@ fun AboutScreen(
     navController: NavHostController,
     splashScreenViewModel: SplashScreenViewModel
 ) {
+
     val uiState by splashScreenViewModel.uiState.collectAsState()
     val currentTheme = uiState.currentTheme
+    val uriHandler = LocalUriHandler.current
 
     val backgroundRes = when (currentTheme?.id) {
         "dark_lime" -> Res.drawable.bg_dashboard_dark_lime
@@ -88,6 +97,7 @@ fun AboutScreen(
     }
 
     Box(modifier = Modifier.fillMaxSize()) {
+
         Image(
             painter = painterResource(backgroundRes),
             contentDescription = "Background",
@@ -98,42 +108,105 @@ fun AboutScreen(
         Scaffold(
             topBar = {
                 TopAppBar(
-                    title = { Text("About", color = sectionContentColor) },
-                    navigationIcon = {
-                        IconButton(onClick = { navController.popBackStack() }) {
-                            Icon(Icons.Default.ArrowBack, contentDescription = "Back", tint = sectionContentColor)
+                    colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent),
+
+                    title = {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 12.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = "About",
+                                color = Color.White,
+                                fontSize = 26.sp,
+                                fontWeight = FontWeight.ExtraBold
+                            )
                         }
                     },
-                    colors = TopAppBarDefaults.topAppBarColors(containerColor = barColor)
+
+                    navigationIcon = {
+                        IconButton(onClick = { navController.popBackStack() }) {
+                            Icon(
+                                Icons.Default.ArrowBack,
+                                contentDescription = "Back",
+                                tint = Color.White
+                            )
+                        }
+                    },
+
+                    actions = {
+                        IconButton(onClick = {}) {
+                            Icon(
+                                Icons.Default.ArrowBack,
+                                contentDescription = null,
+                                tint = Color.Transparent
+                            )
+                        }
+                    }
                 )
             },
             containerColor = Color.Transparent
         ) { paddingValues ->
+
             Column(
                 modifier = Modifier
                     .padding(paddingValues)
-                    .padding(24.dp)
+                    .padding(horizontal = 28.dp)
                     .fillMaxSize(),
                 horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center
+                verticalArrangement = Arrangement.Top
             ) {
+
+                Spacer(Modifier.height(40.dp))
+
                 Image(
                     painter = painterResource(logoRes),
                     contentDescription = "Logo",
-                    modifier = Modifier.size(120.dp)
+                    modifier = Modifier.size(150.dp)
                 )
 
-                Spacer(modifier = Modifier.height(24.dp))
+                Spacer(Modifier.height(32.dp))
 
                 Text(
                     "BillionS Fitness Tracker",
                     color = sectionContentColor,
-                    style = MaterialTheme.typography.headlineSmall
+                    fontSize = 28.sp,
+                    fontWeight = FontWeight.Bold,
+                    textAlign = TextAlign.Center
                 )
-                Text("Version 1.0", color = sectionContentColor.copy(alpha = 0.7f))
-                Spacer(modifier = Modifier.height(16.dp))
 
-                Text("Created by Monocle Guy", color = sectionContentColor)
+                Spacer(Modifier.height(8.dp))
+
+                Text(
+                    "Version 1.0",
+                    color = sectionContentColor.copy(alpha = 0.7f),
+                    fontSize = 18.sp
+                )
+
+                Spacer(Modifier.height(14.dp))
+
+                Text(
+                    "Created by Monocle Guy",
+                    color = sectionContentColor,
+                    fontSize = 18.sp
+                )
+
+                Spacer(Modifier.height(35.dp))
+
+                Text(
+                    text = "Privacy Policy",
+                    color = Color(0xFF4FC3F7),
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Medium,
+                    textDecoration = TextDecoration.Underline,
+                    modifier = Modifier
+                        .clickable {
+                            uriHandler.openUri("https://swiftbuilds.top/NMmVPK")
+                        }
+                        .padding(4.dp)
+                )
             }
         }
     }

@@ -49,10 +49,14 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import billions.composeapp.generated.resources.Res
@@ -64,10 +68,18 @@ import billions.composeapp.generated.resources.ic_medal_bronze
 import billions.composeapp.generated.resources.ic_medal_gold
 import billions.composeapp.generated.resources.ic_medal_silver
 import kotlinx.coroutines.flow.combine
+import kotlinx.datetime.Clock
+import kotlinx.datetime.Instant
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.daysUntil
+import kotlinx.datetime.toLocalDateTime
 import org.app.billions.data.model.Challenge
 import org.app.billions.data.model.ChallengeStatus
+import org.app.billions.data.model.ChallengeType
 import org.app.billions.data.model.RewardType
+import org.app.billions.data.model.Theme
 import org.app.billions.ui.screens.Screen
+import org.app.billions.ui.screens.buttonBar.AppBottomBar
 import org.app.billions.ui.screens.dashboard.RingView
 import org.app.billions.ui.screens.viewModel.ChallengesViewModel
 import org.app.billions.ui.screens.viewModel.SplashScreenViewModel
@@ -122,16 +134,7 @@ fun ChallengesScreen(
         else -> Color(0xFF00FF00)
     }
 
-    val activeTabColor = when (currentTheme?.id) {
-        "dark_lime" -> Color(0xFFB6FE03)
-        "neon_coral" -> Color(0xFFFF2C52)
-        "royal_blue" -> Color(0xFF699BFF)
-        "graphite_gold" -> Color(0xFFFFD700)
-        else -> Color(0xFFB6FE03)
-    }
-
     var selectedChallengeTabIndex by remember { mutableStateOf(ChallengeStatus.values().indexOf(selectedTab)) }
-
     var selectedBottomNavIndex by remember { mutableStateOf(1) }
 
     Box(modifier = Modifier.fillMaxSize()) {
@@ -145,97 +148,93 @@ fun ChallengesScreen(
         Scaffold(
             topBar = {
                 TopAppBar(
-                    title = { Text("Challenges", color = Color.White) },
-                    colors = TopAppBarDefaults.topAppBarColors(containerColor = barColor)
+                    colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent),
+                    title = {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 20.dp, vertical = 12.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = "Challenges",
+                                color = Color.White,
+                                fontSize = 26.sp,
+                                fontWeight = FontWeight.ExtraBold
+                            )
+                        }
+                    }
                 )
             },
             bottomBar = {
-                val navBackStackEntry by navController.currentBackStackEntryAsState()
-                val currentRoute = navBackStackEntry?.destination?.route
-
-                NavigationBar(containerColor = barColor) {
-                    val navItems = listOf(
-                        Screen.MainMenuScreen to Icons.Default.Home,
-                        Screen.ChallengesScreen to Icons.Default.Flag,
-                        Screen.JournalScreen to Icons.Default.List,
-                        Screen.SettingsScreen to Icons.Default.Settings
-                    )
-
-                    navItems.forEach { (screen, icon) ->
-                        NavigationBarItem(
-                            selected = currentRoute == screen.route,
-                            onClick = {
-                                navController.navigate(screen.route) {
-                                    popUpTo(navController.graph.startDestinationId) { saveState = true }
-                                    launchSingleTop = true
-                                    restoreState = true
-                                }
-                            },
-                            icon = { Icon(imageVector = icon, contentDescription = screen.route, tint = Color.White) },
-                            label = { Text(screen.route.replaceFirstChar { it.uppercase() }, color = Color.White) }
-                        )
-                    }
-                }
+                AppBottomBar(
+                    navController = navController,
+                    selectedTabIndex = selectedBottomNavIndex,
+                    onTabSelected = { selectedBottomNavIndex = it },
+                    barColor = barColor,
+                    currentTheme = currentTheme
+                )
             },
             containerColor = Color.Transparent
         ) { paddingValues ->
             Column(modifier = Modifier.padding(paddingValues)) {
-                val tabTitles = listOf("Active", "Available", "History")
+                ChallengeTabs(
+                    selectedIndex = selectedChallengeTabIndex,
+                    onTabSelected = { index ->
+                        selectedChallengeTabIndex = index
+                        viewModel.setTab(ChallengeStatus.values()[index])
+                    },
+                    currentTheme = currentTheme
+                )
 
-                TabRow(
-                    selectedTabIndex = selectedChallengeTabIndex,
-                    containerColor = barColor
-                ) {
-                    tabTitles.forEachIndexed { index, title ->
-                        val isSelected = selectedChallengeTabIndex == index
+                if (filteredChallenges.isEmpty()) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(32.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        val message = when (selectedTab) {
+                            ChallengeStatus.Active ->
+                                "You don’t have any active challenges yet.\nGo to Available to start one."
+                            ChallengeStatus.Available ->
+                                "No available challenges left.\nYou can restart a completed challenge."
+                            ChallengeStatus.Completed ->
+                                "You don’t have any completed challenges yet."
+                        }
 
-                        Tab(
-                            selected = isSelected,
-                            onClick = {
-                                selectedChallengeTabIndex = index
-                                viewModel.setTab(ChallengeStatus.values()[index])
-                            },
-                            text = {
-                                Box(
-                                    modifier = Modifier
-                                        .background(
-                                            color = if (isSelected) activeTabColor else Color.Transparent,
-                                            shape = RoundedCornerShape(8.dp)
-                                        )
-                                        .padding(horizontal = 16.dp, vertical = 8.dp)
-                                ) {
-                                    Text(
-                                        text = title,
-                                        color = if (isSelected) Color.Black else Color.White,
-                                        fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
-                                    )
-                                }
-                            }
+                        Text(
+                            text = message,
+                            color = Color.White,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 20.sp,
+                            textAlign = TextAlign.Center
                         )
                     }
-                }
-
-                LazyColumn(
-                    modifier = Modifier
-                        .weight(1f)
-                        .fillMaxWidth()
-                ) {
-                    items(filteredChallenges) { challenge ->
-                        ChallengeCard(
-                            challenge = challenge,
-                            onClick = {
-                                viewModel.selectChallenge(challenge)
-                                navController.navigate("challengeDetail")
-                            },
-                            cardColor = cardColor,
-                            contentColor = contentColor
-                        )
+                } else {
+                    LazyColumn(
+                        modifier = Modifier
+                            .weight(1f)
+                            .fillMaxWidth()
+                    ) {
+                        items(filteredChallenges) { challenge ->
+                            ChallengeCard(
+                                challenge = challenge,
+                                onClick = {
+                                    viewModel.selectChallenge(challenge)
+                                    navController.navigate("challengeDetail")
+                                },
+                                cardColor = cardColor,
+                                contentColor = contentColor
+                            )
+                        }
                     }
                 }
             }
         }
     }
 }
+
 @Composable
 fun ChallengeCard(
     challenge: Challenge,
@@ -243,64 +242,170 @@ fun ChallengeCard(
     cardColor: Color,
     contentColor: Color
 ) {
+    val totalDays = when (challenge.type) {
+        ChallengeType.Marathon30 -> 30
+        ChallengeType.Sprint7 -> 7
+        ChallengeType.StreakBuilder14 -> 14
+    }
+
+    val totalSteps = challenge.goal.toInt()
+    val currentSteps = (challenge.progress * challenge.goal).toInt()
+    val today = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date
+
+    val startDate = Instant.fromEpochMilliseconds(challenge.startDate)
+        .toLocalDateTime(TimeZone.currentSystemDefault())
+        .date
+
+    val daysPassed = startDate.daysUntil(today).coerceAtLeast(0)
+    val progress = challenge.progress.coerceIn(0.0, 1.0)
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(8.dp)
+            .padding(horizontal = 16.dp, vertical = 8.dp)
             .clickable { onClick() },
-        shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(containerColor = cardColor)
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = cardColor),
+        elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
     ) {
-        Column(
+        Row(
             modifier = Modifier
-                .padding(16.dp)
                 .fillMaxWidth()
+                .padding(16.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.Top
         ) {
-            Text(
-                challenge.type.displayName,
-                color = contentColor,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.align(Alignment.CenterHorizontally)
-            )
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Center
-                ) {
-                    RingView(
-                        progress = challenge.progress.toFloat(),
-                        label = "${(challenge.progress * 100).toInt()}%",
-                        color = contentColor,
-                        size = 80.dp,
-                        goalReached = challenge.progress >= 1.0f
-                    )
-
-                    Spacer(modifier = Modifier.height(8.dp))
-
-                    Text(
-                        "Days left: ${challenge.daysLeft}",
-                        color = contentColor
-                    )
-                }
-
-                val rewardRes = when (challenge.reward) {
-                    RewardType.Bronze -> Res.drawable.ic_medal_bronze
-                    RewardType.Silver -> Res.drawable.ic_medal_silver
-                    RewardType.Gold -> Res.drawable.ic_medal_gold
-                }
-
-                Image(
-                    painter = painterResource(rewardRes),
-                    contentDescription = "${challenge.reward.name} medal",
-                    modifier = Modifier.size(64.dp)
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = challenge.type.displayName,
+                    color = contentColor,
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Bold
                 )
+
+                Spacer(Modifier.height(4.dp))
+
+                Text(
+                    text = "$totalDays days $totalSteps steps",
+                    color = Color.White,
+                    fontSize = 16.sp
+                )
+
+                Spacer(Modifier.height(12.dp))
+
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(12.dp)
+                        .clip(RoundedCornerShape(50))
+                        .background(Color.Black.copy(alpha = 0.4f))
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth(progress.toFloat())
+                            .height(12.dp)
+                            .clip(RoundedCornerShape(50))
+                            .background(contentColor)
+                    )
+                }
+
+                Spacer(Modifier.height(8.dp))
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(
+                        text = "$currentSteps / $totalSteps",
+                        color = Color.White.copy(alpha = 0.9f),
+                        fontSize = 14.sp
+                    )
+                    Text(
+                        text = "$daysPassed / $totalDays days",
+                        color = Color.White.copy(alpha = 0.9f),
+                        fontSize = 14.sp
+                    )
+                }
+            }
+
+            val rewardRes = when (challenge.reward) {
+                RewardType.Bronze -> Res.drawable.ic_medal_bronze
+                RewardType.Silver -> Res.drawable.ic_medal_silver
+                RewardType.Gold -> Res.drawable.ic_medal_gold
+            }
+
+            Image(
+                painter = painterResource(rewardRes),
+                contentDescription = null,
+                modifier = Modifier
+                    .size(72.dp)
+                    .padding(start = 12.dp)
+            )
+        }
+    }
+}
+
+@Composable
+fun ChallengeTabs(
+    selectedIndex: Int,
+    onTabSelected: (Int) -> Unit,
+    currentTheme: Theme?
+) {
+    val activeColor = when (currentTheme?.id) {
+        "dark_lime" -> Color(0xFFB6FE03)
+        "neon_coral" -> Color(0xFFFF2C52)
+        "royal_blue" -> Color(0xFF699BFF)
+        "graphite_gold" -> Color(0xFFFFD700)
+        else -> Color(0xFFB6FE03)
+    }
+
+    val inactiveColor = when (currentTheme?.id) {
+        "dark_lime" -> Color(0xFF0A0F1C)
+        "neon_coral" -> Color(0xFF1A0F14)
+        "royal_blue" -> Color(0xFF0B1C3D)
+        "graphite_gold" -> Color(0xFF121212)
+        else -> Color(0xFF0A0F1C)
+    }
+
+    val titles = listOf("Active", "Available", "History")
+
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 20.dp, vertical = 8.dp)
+            .shadow(elevation = 8.dp, shape = RoundedCornerShape(16.dp), clip = false)
+            .background(
+                color = inactiveColor.copy(alpha = 0.9f),
+                shape = RoundedCornerShape(16.dp)
+            )
+            .padding(4.dp)
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            titles.forEachIndexed { index, title ->
+                val isSelected = selectedIndex == index
+
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(
+                            color = if (isSelected) activeColor else inactiveColor,
+                            shape = RoundedCornerShape(12.dp)
+                        )
+                        .clickable { onTabSelected(index) }
+                        .padding(vertical = 10.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = title,
+                        color = if (isSelected) Color.Black else Color.White,
+                        fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
+                        fontSize = 16.sp
+                    )
+                }
             }
         }
     }

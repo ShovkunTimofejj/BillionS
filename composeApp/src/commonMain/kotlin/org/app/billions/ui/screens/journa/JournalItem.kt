@@ -40,10 +40,13 @@ import androidx.compose.material.icons.filled.LocalFireDepartment
 import androidx.compose.material.icons.filled.Map
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import billions.composeapp.generated.resources.Res
 import billions.composeapp.generated.resources.ic_calories_dark_lime
 import billions.composeapp.generated.resources.ic_calories_graphite_gold
@@ -72,9 +75,9 @@ fun JournalItem(
     onEdit: () -> Unit,
     onDelete: () -> Unit,
     currentTheme: Theme?,
-    cardColor: Color = MaterialTheme.colorScheme.surface,
-    contentColor: Color = MaterialTheme.colorScheme.onSurface,
-    swipeThreshold: Float = 140f
+    cardColor: Color,
+    contentColor: Color,
+    swipeThreshold: Float = 180f
 ) {
     val scope = rememberCoroutineScope()
     val offsetX = remember { Animatable(0f) }
@@ -103,21 +106,35 @@ fun JournalItem(
         else -> Res.drawable.ic_calories_dark_lime
     }
 
+    val accentColor = when (currentTheme?.id) {
+        "dark_lime" -> Color(0xFFB6FE03)
+        "neon_coral" -> Color(0xFFFF2C52)
+        "royal_blue" -> Color(0xFF699BFF)
+        "graphite_gold" -> Color(0xFFFFD700)
+        else -> Color(0xFFB6FE03)
+    }
+
+    val editColor = Color(0xFF2E3A47)
+    val deleteColor = Color(0xFFD32F2F)
+
     Box(
         modifier = Modifier
             .fillMaxWidth()
+            .height(130.dp)
+            .padding(horizontal = 18.dp, vertical = 10.dp)
+            .clip(RoundedCornerShape(20.dp))
             .pointerInput(Unit) {
                 detectHorizontalDragGestures(
                     onDragEnd = {
                         scope.launch {
                             when {
                                 offsetX.value < -swipeThreshold -> {
-                                    offsetX.animateTo(-300f, tween(250))
+                                    offsetX.animateTo(-400f, tween(250))
                                     onDelete()
                                     offsetX.animateTo(0f, tween(200))
                                 }
                                 offsetX.value > swipeThreshold -> {
-                                    offsetX.animateTo(300f, tween(250))
+                                    offsetX.animateTo(400f, tween(250))
                                     onEdit()
                                     offsetX.animateTo(0f, tween(200))
                                 }
@@ -127,94 +144,107 @@ fun JournalItem(
                     },
                     onHorizontalDrag = { _, drag ->
                         scope.launch {
-                            offsetX.snapTo((offsetX.value + drag).coerceIn(-300f, 300f))
+                            offsetX.snapTo((offsetX.value + drag).coerceIn(-400f, 400f))
                         }
                     }
                 )
             }
     ) {
-        Row(Modifier.matchParentSize()) {
+        Row(
+            Modifier
+                .matchParentSize()
+                .clip(RoundedCornerShape(20.dp))
+        ) {
             Box(
                 Modifier
                     .weight(1f)
                     .fillMaxHeight()
-                    .background(Color.Transparent),
-                contentAlignment = Alignment.CenterStart
+                    .background(editColor),
+                contentAlignment = Alignment.Center
             ) {
-                Icon(
-                    Icons.Default.Edit,
-                    contentDescription = "Edit",
-                    tint = Color.White,
-                    modifier = Modifier.padding(start = 24.dp)
+                Text(
+                    "Edit",
+                    color = Color.White,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 20.sp
                 )
             }
             Box(
                 Modifier
                     .weight(1f)
                     .fillMaxHeight()
-                    .background(Color.Transparent),
-                contentAlignment = Alignment.CenterEnd
+                    .background(deleteColor),
+                contentAlignment = Alignment.Center
             ) {
-                Icon(
-                    Icons.Default.Delete,
-                    contentDescription = "Delete",
-                    tint = Color.White,
-                    modifier = Modifier.padding(end = 24.dp)
+                Text(
+                    "Delete",
+                    color = Color.White,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 20.sp
                 )
             }
         }
 
         Card(
-            shape = RoundedCornerShape(16.dp),
             modifier = Modifier
                 .offset { IntOffset(offsetX.value.roundToInt(), 0) }
-                .fillMaxWidth()
-                .padding(horizontal = 8.dp, vertical = 6.dp)
-                .clickable(onClick = onClick),
-            colors = CardDefaults.cardColors(
-                containerColor = cardColor,
-                contentColor = contentColor
-            ),
-            elevation = CardDefaults.cardElevation(defaultElevation = 6.dp)
+                .fillMaxSize(),
+            shape = RoundedCornerShape(20.dp),
+            colors = CardDefaults.cardColors(containerColor = cardColor),
+            elevation = CardDefaults.cardElevation(defaultElevation = 12.dp)
         ) {
-            Row(Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
-                val iconPainter = when {
-                    entry.steps > 0 -> painterResource(stepsIconRes)
-                    entry.distanceMeters > 0 -> painterResource(distanceIconRes)
-                    else -> painterResource(caloriesIconRes)
-                }
-
-                Image(
-                    painter = iconPainter,
-                    contentDescription = null,
-                    modifier = Modifier.size(24.dp)
+            Column(
+                modifier = Modifier
+                    .clickable(onClick = onClick)
+                    .fillMaxSize()
+                    .padding(horizontal = 20.dp, vertical = 16.dp)
+            ) {
+                Text(
+                    text = entry.date.date.toString(),
+                    color = accentColor,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 17.sp
                 )
 
-                Spacer(Modifier.width(12.dp))
-                Column(Modifier.weight(1f)) {
-                    Text(
-                        entry.date.date.toString(),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = contentColor.copy(alpha = 0.7f)
+                Spacer(Modifier.height(10.dp))
+
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    val iconPainter = when {
+                        entry.steps > 0 -> painterResource(stepsIconRes)
+                        entry.distanceMeters > 0 -> painterResource(distanceIconRes)
+                        else -> painterResource(caloriesIconRes)
+                    }
+
+                    Image(
+                        painter = iconPainter,
+                        contentDescription = null,
+                        modifier = Modifier.size(48.dp)
                     )
-                    Text(
-                        buildString {
-                            if (entry.steps > 0) append(entry.steps.asSteps())
-                            if (entry.distanceMeters > 0) append(" · ${entry.distanceMeters.asKm()}")
-                            if (entry.activeEnergyKcal > 0) append(" · ${entry.activeEnergyKcal.asKcal()}")
-                        },
-                        style = MaterialTheme.typography.bodyMedium,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                        color = contentColor
-                    )
-                    Text(
-                        entry.source,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = contentColor.copy(alpha = 0.5f)
-                    )
+
+                    Spacer(Modifier.width(18.dp))
+
+                    Column {
+                        Text(
+                            text = when {
+                                entry.steps > 0 -> entry.steps.asSteps()
+                                entry.distanceMeters > 0 -> entry.distanceMeters.asKm()
+                                else -> entry.activeEnergyKcal.asKcal()
+                            },
+                            color = Color.White,
+                            fontSize = 22.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                        if (entry.note.isNotBlank()) {
+                            Text(
+                                text = entry.note,
+                                color = Color.White.copy(alpha = 0.8f),
+                                fontSize = 14.sp,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis
+                            )
+                        }
+                    }
                 }
-                Icon(Icons.Default.ChevronRight, contentDescription = null, tint = contentColor)
             }
         }
     }

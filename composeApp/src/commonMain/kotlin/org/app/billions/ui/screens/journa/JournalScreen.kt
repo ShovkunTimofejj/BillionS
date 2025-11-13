@@ -1,15 +1,22 @@
 package org.app.billions.ui.screens.journa
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
@@ -24,7 +31,10 @@ import androidx.compose.material.icons.filled.Insights
 import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Share
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FabPosition
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -46,7 +56,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import billions.composeapp.generated.resources.Res
@@ -54,7 +66,10 @@ import billions.composeapp.generated.resources.bg_dashboard_dark_lime
 import billions.composeapp.generated.resources.bg_dashboard_graphite_gold
 import billions.composeapp.generated.resources.bg_dashboard_neon_coral
 import billions.composeapp.generated.resources.bg_dashboard_royal_blue
+import billions.composeapp.generated.resources.ic_filter_custom
+import org.app.billions.data.model.Theme
 import org.app.billions.ui.screens.Screen
+import org.app.billions.ui.screens.buttonBar.AppBottomBar
 import org.app.billions.ui.screens.viewModel.JournalViewModel
 import org.app.billions.ui.screens.viewModel.SplashScreenViewModel
 import org.jetbrains.compose.resources.painterResource
@@ -68,7 +83,6 @@ fun JournalScreen(
     splashScreenViewModel: SplashScreenViewModel
 ) {
     val state by viewModel.state
-
     val uiState by splashScreenViewModel.uiState.collectAsState()
     val currentTheme = uiState.currentTheme
 
@@ -110,10 +124,6 @@ fun JournalScreen(
 
     var selectedBottomNavIndex by remember { mutableStateOf(2) }
 
-    val pageSize = 6
-    var currentPage by remember { mutableStateOf(0) }
-    val pages = state.entries.chunked(pageSize)
-
     Box(modifier = Modifier.fillMaxSize()) {
         Image(
             painter = painterResource(backgroundRes),
@@ -125,59 +135,48 @@ fun JournalScreen(
         Scaffold(
             topBar = {
                 TopAppBar(
-                    title = { Text("Journal", color = Color.White) },
-                    colors = TopAppBarDefaults.topAppBarColors(containerColor = barColor),
-                    actions = {
-                        IconButton(onClick = { viewModel.toggleFilterSheet() }) {
-                            Icon(Icons.Default.FilterList, contentDescription = "Filter", tint = Color.White)
-                        }
-                        IconButton(onClick = { viewModel.openStats() }) {
-                            Icon(Icons.Default.Insights, contentDescription = "Statistics", tint = Color.White)
-                        }
-                        IconButton(onClick = { viewModel.exportCsv() }) {
-                            Icon(Icons.Default.Share, contentDescription = "Export CSV", tint = Color.White)
+                    colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent),
+                    title = {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 20.dp, vertical = 12.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = "Journal",
+                                color = Color.White,
+                                fontSize = 26.sp,
+                                fontWeight = FontWeight.ExtraBold
+                            )
+
+                            Image(
+                                painter = painterResource(Res.drawable.ic_filter_custom),
+                                contentDescription = "Filter",
+                                modifier = Modifier
+                                    .align(Alignment.CenterEnd)
+                                    .size(32.dp)
+                                    .clickable { viewModel.toggleFilterSheet() }
+                            )
                         }
                     }
                 )
             },
             floatingActionButton = {
-                FloatingActionButton(
+                ThemedAddEntryButton(
                     onClick = { viewModel.showAddEntryDialog() },
-                    modifier = Modifier
-                        .padding(bottom = 70.dp)
-                ) {
-                    Icon(Icons.Default.Add, contentDescription = "Add Entry")
-                }
+                    currentTheme = currentTheme
+                )
             },
+            floatingActionButtonPosition = FabPosition.Center,
             bottomBar = {
-                val navBackStackEntry by navController.currentBackStackEntryAsState()
-                val currentRoute = navBackStackEntry?.destination?.route
-
-                NavigationBar(containerColor = barColor) {
-                    val navItems = listOf(
-                        Screen.MainMenuScreen to Icons.Default.Home,
-                        Screen.ChallengesScreen to Icons.Default.Flag,
-                        Screen.JournalScreen to Icons.Default.List,
-                        Screen.SettingsScreen to Icons.Default.Settings
-                    )
-
-                    navItems.forEachIndexed { index, (screen, icon) ->
-                        val isSelected = currentRoute == screen.route
-                        NavigationBarItem(
-                            selected = isSelected,
-                            onClick = {
-                                selectedBottomNavIndex = index
-                                navController.navigate(screen.route) {
-                                    popUpTo(navController.graph.startDestinationId) { saveState = true }
-                                    launchSingleTop = true
-                                    restoreState = true
-                                }
-                            },
-                            icon = { Icon(imageVector = icon, contentDescription = screen.route, tint = Color.White) },
-                            label = { Text(screen.route.replaceFirstChar { it.uppercase() }, color = Color.White) }
-                        )
-                    }
-                }
+                AppBottomBar(
+                    navController = navController,
+                    selectedTabIndex = selectedBottomNavIndex,
+                    onTabSelected = { selectedBottomNavIndex = it },
+                    barColor = barColor,
+                    currentTheme = currentTheme
+                )
             },
             containerColor = Color.Transparent
         ) { paddingValues ->
@@ -186,56 +185,29 @@ fun JournalScreen(
                     .fillMaxSize()
                     .padding(paddingValues)
             ) {
-                if (pages.isEmpty()) {
+                if (state.entries.isEmpty()) {
                     Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                         Text("No entries yet", color = Color.White)
                     }
                 } else {
-                    Column(Modifier.fillMaxSize()) {
-                        LazyColumn(
-                            modifier = Modifier.weight(1f)
-                        ) {
-                            items(pages[currentPage], key = { it.id }) { entry ->
-                                JournalItem(
-                                    entry = entry,
-                                    onClick = {
-                                        viewModel.selectEntry(entry)
-                                        navController.navigate("entryDetail")
-                                    },
-                                    onEdit = { viewModel.startEdit(entry) },
-                                    onDelete = { viewModel.deleteEntry(entry.id) },
-                                    currentTheme = currentTheme,
-                                    cardColor = cardColor,
-                                    contentColor = contentColor
-                                )
-                            }
-                        }
-
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(8.dp),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            IconButton(
-                                onClick = { if (currentPage > 0) currentPage-- },
-                                enabled = currentPage > 0
-                            ) {
-                                Icon(Icons.Default.ArrowBack, contentDescription = "Previous", tint = Color.White)
-                            }
-
-                            Text(
-                                text = "Page ${currentPage + 1} / ${pages.size}",
-                                color = Color.White
+                    LazyColumn(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(bottom = 96.dp)
+                    ) {
+                        items(state.entries, key = { it.id }) { entry ->
+                            JournalItem(
+                                entry = entry,
+                                onClick = {
+                                    viewModel.selectEntry(entry)
+                                    navController.navigate("entryDetail")
+                                },
+                                onEdit = { viewModel.startEdit(entry) },
+                                onDelete = { viewModel.deleteEntry(entry.id) },
+                                currentTheme = currentTheme,
+                                cardColor = cardColor,
+                                contentColor = contentColor
                             )
-
-                            IconButton(
-                                onClick = { if (currentPage < pages.lastIndex) currentPage++ },
-                                enabled = currentPage < pages.lastIndex
-                            ) {
-                                Icon(Icons.Default.ArrowForward, contentDescription = "Next", tint = Color.White)
-                            }
                         }
                     }
                 }
@@ -243,6 +215,7 @@ fun JournalScreen(
                 if (viewModel.showAddDialog.value) {
                     AddEditEntryDialog(
                         editing = viewModel.editingEntry.value,
+                        typeFromViewModel = viewModel.state.value.activeAddType,
                         onSave = { viewModel.saveEntry(it) },
                         onCancel = { viewModel.hideAddEntryDialog() },
                         splashScreenViewModel = splashScreenViewModel
@@ -270,13 +243,52 @@ fun JournalScreen(
                 }
 
                 if (state.successEvent) {
-                    ConfettiOverlay()
+                    ConfettiOverlay(currentTheme)
                     LaunchedEffect(Unit) {
                         kotlinx.coroutines.delay(1200)
                         viewModel.consumeSuccess()
                     }
                 }
             }
+        }
+    }
+}
+
+@Composable
+fun ThemedAddEntryButton(
+    onClick: () -> Unit,
+    currentTheme: Theme?
+) {
+    val buttonColor = when (currentTheme?.id) {
+        "dark_lime" -> Color(0xFFB6FE03)
+        "neon_coral" -> Color(0xFFFF2C52)
+        "royal_blue" -> Color(0xFF699BFF)
+        "graphite_gold" -> Color(0xFFFFD700)
+        else -> Color(0xFFB6FE03)
+    }
+
+    val textColor = Color.Black
+
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(bottom = 5.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        Button(
+            onClick = onClick,
+            colors = ButtonDefaults.buttonColors(containerColor = buttonColor),
+            shape = RoundedCornerShape(8.dp),
+            modifier = Modifier
+                .height(50.dp)
+                .width(160.dp)
+        ) {
+            Text(
+                text = "Add Entry",
+                color = textColor,
+                fontWeight = FontWeight.Bold,
+                fontSize = 18.sp
+            )
         }
     }
 }

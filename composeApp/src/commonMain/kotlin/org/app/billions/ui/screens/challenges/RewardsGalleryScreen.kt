@@ -39,6 +39,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -67,7 +68,7 @@ fun RewardsGalleryScreen(
     splashScreenViewModel: SplashScreenViewModel
 ) {
     val rewards = listOf(RewardType.Bronze, RewardType.Silver, RewardType.Gold)
-    var selectedReward by remember { mutableStateOf<RewardType?>(null) }
+    var selectedReward by remember { mutableStateOf(RewardType.Bronze) }
 
     val uiState by splashScreenViewModel.uiState.collectAsState()
     val currentTheme = uiState.currentTheme
@@ -115,14 +116,17 @@ fun RewardsGalleryScreen(
             modifier = Modifier.fillMaxSize(),
             contentScale = ContentScale.Crop
         )
-
         Scaffold(
             topBar = {
                 TopAppBar(
                     title = { Text("Rewards Gallery", color = Color.White) },
                     navigationIcon = {
                         IconButton(onClick = { navController.popBackStack() }) {
-                            Icon(Icons.Default.ArrowBack, contentDescription = "Back", tint = Color.White)
+                            Icon(
+                                Icons.Default.ArrowBack,
+                                contentDescription = "Back",
+                                tint = Color.White
+                            )
                         }
                     },
                     colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent)
@@ -130,96 +134,99 @@ fun RewardsGalleryScreen(
             },
             containerColor = Color.Transparent
         ) { paddingValues ->
-            Box(modifier = Modifier.fillMaxSize()) {
-                LazyVerticalGrid(
-                    columns = GridCells.Fixed(3),
-                    modifier = Modifier
-                        .padding(paddingValues)
-                        .fillMaxSize()
-                ) {
-                    items(rewards) { reward ->
-                        val rewardRes = when (reward) {
-                            RewardType.Bronze -> Res.drawable.ic_medal_bronze
-                            RewardType.Silver -> Res.drawable.ic_medal_silver
-                            RewardType.Gold -> Res.drawable.ic_medal_gold
-                        }
-
-                        val isSelected = selectedReward == reward
-                        val bgColor = if (isSelected) highlightColor else cardColor
-
-                        Column(
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            modifier = Modifier
-                                .padding(8.dp)
-                                .shadow(if (isSelected) 12.dp else 4.dp, RoundedCornerShape(12.dp))
-                                .background(bgColor, RoundedCornerShape(12.dp))
-                                .clickable { selectedReward = reward }
-                                .padding(8.dp)
-                        ) {
-                            Image(
-                                painter = painterResource(rewardRes),
-                                contentDescription = reward.name,
-                                modifier = Modifier.size(if (isSelected) 80.dp else 64.dp)
-                            )
-                            Spacer(Modifier.height(4.dp))
-                            Text(
-                                reward.name,
-                                color = contentColor,
-                                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
-                                textAlign = TextAlign.Center
-                            )
-                        }
-                    }
-                }
-
-                selectedReward?.let { reward ->
+            LazyVerticalGrid(
+                columns = GridCells.Fixed(3),
+                modifier = Modifier
+                    .padding(paddingValues)
+                    .fillMaxSize()
+            ) {
+                items(rewards) { reward ->
                     val rewardRes = when (reward) {
                         RewardType.Bronze -> Res.drawable.ic_medal_bronze
                         RewardType.Silver -> Res.drawable.ic_medal_silver
                         RewardType.Gold -> Res.drawable.ic_medal_gold
                     }
 
-                    Box(
+                    val isSelected = selectedReward == reward
+                    val bgColor = if (isSelected) highlightColor else cardColor
+
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
                         modifier = Modifier
-                            .fillMaxSize()
-                            .background(Color.Black.copy(alpha = 0.5f))
-                            .clickable { selectedReward = null },
-                        contentAlignment = Alignment.Center
+                            .padding(8.dp)
+                            .shadow(if (isSelected) 12.dp else 4.dp, RoundedCornerShape(12.dp))
+                            .background(bgColor, RoundedCornerShape(12.dp))
+                            .clickable { selectedReward = reward }
+                            .padding(8.dp)
                     ) {
-                        Column(
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            modifier = Modifier
-                                .background(cardColor.copy(alpha = 0.9f), RoundedCornerShape(16.dp))
-                                .padding(24.dp)
-                        ) {
-                            Image(
-                                painter = painterResource(rewardRes),
-                                contentDescription = reward.name,
-                                modifier = Modifier
-                                    .size(160.dp)
-                                    .shadow(16.dp, RoundedCornerShape(16.dp))
-                            )
-                            Spacer(Modifier.height(12.dp))
-                            Text(
-                                reward.name,
-                                color = contentColor,
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 20.sp
-                            )
-                            Spacer(Modifier.height(8.dp))
-                            Text(
-                                text = when (reward) {
-                                    RewardType.Bronze -> "Awarded for completing the challenge at the Bronze level."
-                                    RewardType.Silver -> "Awarded for higher achievement in the challenge."
-                                    RewardType.Gold -> "Awarded for the best performance and full completion."
-                                },
-                                color = Color.White,
-                                fontSize = 16.sp,
-                                textAlign = TextAlign.Center
-                            )
-                        }
+                        Image(
+                            painter = painterResource(rewardRes),
+                            contentDescription = reward.name,
+                            modifier = Modifier.size(if (isSelected) 80.dp else 64.dp)
+                        )
+                        Spacer(Modifier.height(4.dp))
+                        Text(
+                            reward.name,
+                            color = contentColor,
+                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
+                            textAlign = TextAlign.Center
+                        )
                     }
                 }
+            }
+        }
+
+        val rewardRes = when (selectedReward) {
+            RewardType.Bronze -> Res.drawable.ic_medal_bronze
+            RewardType.Silver -> Res.drawable.ic_medal_silver
+            RewardType.Gold -> Res.drawable.ic_medal_gold
+        }
+
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(top = 56.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier
+                    .background(cardColor.copy(alpha = 0.9f), RoundedCornerShape(16.dp))
+                    .padding(24.dp)
+            ) {
+                Image(
+                    painter = painterResource(rewardRes),
+                    contentDescription = selectedReward.name,
+                    modifier = Modifier
+                        .size(160.dp)
+                )
+                Spacer(Modifier.height(12.dp))
+                Text(
+                    selectedReward.name,
+                    color = contentColor,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 20.sp
+                )
+                Spacer(Modifier.height(8.dp))
+                Text(
+                    text = when (selectedReward) {
+                        RewardType.Bronze ->
+                            " Bronze Medal — awarded for your persistence and dedication. " +
+                                    "You’ve proven that consistent effort leads to growth. Keep pushing forward — every small win matters!"
+
+                        RewardType.Silver ->
+                            " Silver Medal — a symbol of your strong performance and steady progress. " +
+                                    "You’ve gone beyond the basics and shown determination, skill, and focus on improvement."
+
+                        RewardType.Gold ->
+                            " Gold Medal — the highest honor for completing the challenge flawlessly! " +
+                                    "You’ve demonstrated mastery, resilience, and true excellence. " +
+                                    "This achievement reflects your full potential and discipline!"
+                    },
+                    color = Color.White,
+                    fontSize = 16.sp,
+                    textAlign = TextAlign.Center
+                )
             }
         }
     }

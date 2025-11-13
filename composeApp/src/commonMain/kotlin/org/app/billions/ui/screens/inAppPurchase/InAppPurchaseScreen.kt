@@ -46,7 +46,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import billions.composeapp.generated.resources.Res
 import billions.composeapp.generated.resources.bg_dashboard_dark_lime
@@ -117,9 +120,10 @@ fun InAppPurchaseScreen(
     }
 
     Box(modifier = Modifier.fillMaxSize()) {
+
         Image(
             painter = painterResource(backgroundRes),
-            contentDescription = "Background",
+            contentDescription = null,
             modifier = Modifier.fillMaxSize(),
             contentScale = ContentScale.Crop
         )
@@ -127,25 +131,47 @@ fun InAppPurchaseScreen(
         Scaffold(
             topBar = {
                 TopAppBar(
-                    title = { Text("Themes Store", color = contentColor) },
-                    navigationIcon = {
-                        IconButton(onClick = { navController.popBackStack() }) {
-                            Icon(Icons.Default.Close, contentDescription = null, tint = contentColor)
+                    colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent),
+                    title = {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 12.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                "Themes Store",
+                                color = Color.White,
+                                fontSize = 26.sp,
+                                fontWeight = FontWeight.ExtraBold
+                            )
                         }
                     },
-                    colors = TopAppBarDefaults.topAppBarColors(containerColor = barColor)
+                    navigationIcon = {
+                        IconButton(onClick = { navController.popBackStack() }) {
+                            Icon(Icons.Default.Close, null, tint = Color.White)
+                        }
+                    },
+                    actions = {
+                        IconButton(onClick = {}) {
+                            Icon(Icons.Default.Close, null, tint = Color.Transparent)
+                        }
+                    }
                 )
             },
             containerColor = Color.Transparent
         ) { padding ->
+
             Column(
                 modifier = Modifier
                     .padding(padding)
                     .fillMaxSize(),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
+
                 LazyColumn(modifier = Modifier.weight(1f)) {
                     items(themes) { theme ->
+
                         val isActive = currentTheme?.id == theme.id
 
                         val imageRes = when (theme.id) {
@@ -190,7 +216,7 @@ fun InAppPurchaseScreen(
                                 )
                                 Spacer(Modifier.width(12.dp))
                                 Column {
-                                    Text(theme.name, style = MaterialTheme.typography.titleMedium, color = contentColor)
+                                    Text(theme.name, color = contentColor)
                                     when {
                                         isActive -> Text("Active", color = Color.Red)
                                         theme.isPurchased -> Text("Purchased", color = Color.Green)
@@ -203,25 +229,35 @@ fun InAppPurchaseScreen(
                 }
 
                 when (purchaseState) {
+
                     PurchaseState.Idle -> {
                         Row(
                             horizontalArrangement = Arrangement.Center,
                             modifier = Modifier.fillMaxWidth().padding(16.dp)
                         ) {
+
                             Button(
                                 enabled = selectedTheme != null && !selectedTheme!!.isPurchased,
                                 onClick = {
                                     scope.launch {
                                         purchaseState = PurchaseState.Loading
                                         val result = billingRepository.purchaseTheme(selectedTheme!!.id)
+
                                         purchaseState = when (result) {
                                             is PurchaseResult.Success -> {
                                                 themes = billingRepository.getThemes()
                                                 themeRepository.setCurrentTheme(selectedTheme!!.id)
                                                 splashScreenViewModel.updateTheme(selectedTheme!!.id)
                                                 selectedTheme = themes.find { it.id == selectedTheme!!.id }
+
+                                                scope.launch {
+                                                    delay(1200)
+                                                    purchaseState = PurchaseState.Idle
+                                                }
+
                                                 PurchaseState.Success
                                             }
+
                                             is PurchaseResult.Failure -> PurchaseState.Failure
                                             is PurchaseResult.Error -> {
                                                 errorMessage = result.message
@@ -236,14 +272,22 @@ fun InAppPurchaseScreen(
                             }
 
                             Spacer(Modifier.width(12.dp))
+
                             OutlinedButton(onClick = {
                                 scope.launch {
                                     purchaseState = PurchaseState.Restore
                                     delay(1500)
                                     val result = billingRepository.restorePurchases()
+
                                     purchaseState = when (result) {
                                         is PurchaseResult.Success -> {
                                             themes = billingRepository.getThemes()
+
+                                            scope.launch {
+                                                delay(1200)
+                                                purchaseState = PurchaseState.Idle
+                                            }
+
                                             PurchaseState.Success
                                         }
                                         is PurchaseResult.Failure -> PurchaseState.Failure
@@ -260,35 +304,41 @@ fun InAppPurchaseScreen(
                     }
 
                     PurchaseState.Loading -> {
-                        CircularProgressIndicator(Modifier.padding(16.dp), color = contentColor)
+                        CircularProgressIndicator(
+                            modifier = Modifier.padding(16.dp),
+                            color = contentColor
+                        )
                     }
 
                     PurchaseState.Success -> {
-                        ConfettiOverlay()
-                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            Text("Purchase Successful", style = MaterialTheme.typography.headlineMedium, color = contentColor)
-                            Text("Theme applied. Premium challenges unlocked.", color = contentColor)
-                            Button(
-                                onClick = { navController.popBackStack() },
-                                colors = ButtonDefaults.buttonColors(containerColor = contentColor)
-                            ) {
-                                Text("Done", color = Color.Black)
-                            }
-                        }
                     }
 
                     PurchaseState.Failure -> {
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            Text("Purchase Failed", style = MaterialTheme.typography.headlineMedium, color = contentColor)
-                            Text(errorMessage ?: "Something went wrong.", color = contentColor)
-                            Row {
-                                Button(onClick = { purchaseState = PurchaseState.Idle }, colors = ButtonDefaults.buttonColors(containerColor = contentColor)) {
-                                    Text("Try Again", color = Color.Black)
-                                }
-                                Spacer(Modifier.width(8.dp))
-                                OutlinedButton(onClick = { navController.popBackStack() }) {
-                                    Text("Close", color = contentColor)
-                                }
+                            Text(
+                                "Purchase Failed",
+                                color = contentColor,
+                                fontSize = 24.sp,
+                                fontWeight = FontWeight.Bold,
+                                textAlign = TextAlign.Center
+                            )
+
+                            Spacer(Modifier.height(8.dp))
+
+                            Text(
+                                errorMessage ?: "Something went wrong.",
+                                color = contentColor,
+                                fontSize = 18.sp,
+                                textAlign = TextAlign.Center
+                            )
+
+                            Spacer(Modifier.height(16.dp))
+
+                            Button(
+                                onClick = { purchaseState = PurchaseState.Idle },
+                                colors = ButtonDefaults.buttonColors(containerColor = contentColor)
+                            ) {
+                                Text("Try Again", color = Color.Black, fontSize = 18.sp, fontWeight = FontWeight.Bold)
                             }
                         }
                     }
@@ -301,6 +351,10 @@ fun InAppPurchaseScreen(
                     }
                 }
             }
+        }
+
+        if (purchaseState == PurchaseState.Success) {
+            ConfettiOverlay(currentTheme)
         }
     }
 }
@@ -325,7 +379,6 @@ sealed class PurchaseState {
 //    var themes by remember { mutableStateOf<List<Theme>>(emptyList()) }
 //    var selectedTheme by remember { mutableStateOf<Theme?>(null) }
 //    var purchaseState by remember { mutableStateOf<PurchaseState>(PurchaseState.Idle) }
-//
 //
 //    val uiState by splashScreenViewModel.uiState.collectAsState()
 //    val currentTheme = uiState.currentTheme
@@ -375,7 +428,11 @@ sealed class PurchaseState {
 //                    title = { Text("Themes Store (Demo)", color = contentColor) },
 //                    navigationIcon = {
 //                        IconButton(onClick = { navController.popBackStack() }) {
-//                            Icon(Icons.Default.Close, contentDescription = null, tint = contentColor)
+//                            Icon(
+//                                Icons.Default.Close,
+//                                contentDescription = null,
+//                                tint = contentColor
+//                            )
 //                        }
 //                    },
 //                    colors = TopAppBarDefaults.topAppBarColors(containerColor = barColor)
@@ -392,7 +449,6 @@ sealed class PurchaseState {
 //                LazyColumn(modifier = Modifier.weight(1f)) {
 //                    items(themes) { theme ->
 //                        val isActive = currentTheme?.id == theme.id
-//
 //
 //                        val imageRes = when (theme.id) {
 //                            "dark_lime" -> Res.drawable.theme_dark_lime
@@ -438,7 +494,11 @@ sealed class PurchaseState {
 //                                )
 //                                Spacer(Modifier.width(12.dp))
 //                                Column {
-//                                    Text(theme.name, style = MaterialTheme.typography.titleMedium, color = contentColor)
+//                                    Text(
+//                                        theme.name,
+//                                        style = MaterialTheme.typography.titleMedium,
+//                                        color = contentColor
+//                                    )
 //                                    when {
 //                                        isActive -> Text("Active", color = Color.Red)
 //                                        theme.isPurchased -> Text("Unlocked", color = Color.Green)
@@ -450,9 +510,10 @@ sealed class PurchaseState {
 //                    }
 //                }
 //
-//
 //                when (purchaseState) {
-//                    PurchaseState.Idle -> {
+//
+//                    PurchaseState.Idle,
+//                    PurchaseState.Success -> {
 //                        Row(
 //                            horizontalArrangement = Arrangement.Center,
 //                            modifier = Modifier
@@ -465,6 +526,7 @@ sealed class PurchaseState {
 //                                    scope.launch {
 //                                        purchaseState = PurchaseState.Loading
 //                                        delay(1000)
+//
 //                                        selectedTheme?.let { theme ->
 //                                            themeRepository.purchaseTheme(theme.id)
 //                                            themeRepository.setCurrentTheme(theme.id)
@@ -472,7 +534,10 @@ sealed class PurchaseState {
 //                                            themes = themeRepository.getThemes()
 //                                            selectedTheme = themes.find { it.id == theme.id }
 //                                        }
+//
 //                                        purchaseState = PurchaseState.Success
+//                                        delay(1500)
+//                                        purchaseState = PurchaseState.Idle
 //                                    }
 //                                },
 //                                colors = ButtonDefaults.buttonColors(containerColor = contentColor)
@@ -489,6 +554,8 @@ sealed class PurchaseState {
 //                                    themes.forEach { themeRepository.purchaseTheme(it.id) }
 //                                    themes = themeRepository.getThemes()
 //                                    purchaseState = PurchaseState.Success
+//                                    delay(1500)
+//                                    purchaseState = PurchaseState.Idle
 //                                }
 //                            }) {
 //                                Text("Unlock All", color = contentColor)
@@ -497,27 +564,23 @@ sealed class PurchaseState {
 //                    }
 //
 //                    PurchaseState.Loading -> {
-//                        CircularProgressIndicator(Modifier.padding(16.dp), color = contentColor)
-//                    }
-//
-//                    PurchaseState.Success -> {
-//                        ConfettiOverlay()
-//                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-//                            Text("Unlocked!", style = MaterialTheme.typography.headlineMedium, color = contentColor)
-//                            Text("Theme applied.", color = contentColor)
-//                            Button(
-//                                onClick = { navController.popBackStack() },
-//                                colors = ButtonDefaults.buttonColors(containerColor = contentColor)
-//                            ) {
-//                                Text("Done", color = Color.Black)
-//                            }
-//                        }
+//                        CircularProgressIndicator(
+//                            modifier = Modifier.padding(16.dp),
+//                            color = contentColor
+//                        )
 //                    }
 //
 //                    PurchaseState.Failure -> {
 //                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-//                            Text("Error", style = MaterialTheme.typography.headlineMedium, color = contentColor)
-//                            Button(onClick = { purchaseState = PurchaseState.Idle }, colors = ButtonDefaults.buttonColors(containerColor = contentColor)) {
+//                            Text(
+//                                "Error",
+//                                style = MaterialTheme.typography.headlineMedium,
+//                                color = contentColor
+//                            )
+//                            Button(
+//                                onClick = { purchaseState = PurchaseState.Idle },
+//                                colors = ButtonDefaults.buttonColors(containerColor = contentColor)
+//                            ) {
 //                                Text("Try Again", color = Color.Black)
 //                            }
 //                        }
@@ -532,8 +595,13 @@ sealed class PurchaseState {
 //                }
 //            }
 //        }
+//
+//        if (purchaseState == PurchaseState.Success) {
+//            ConfettiOverlay(currentTheme)
+//        }
 //    }
 //}
+//
 //sealed class PurchaseState {
 //    object Idle : PurchaseState()
 //    object Loading : PurchaseState()

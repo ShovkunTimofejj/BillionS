@@ -13,13 +13,19 @@ import kotlinx.coroutines.launch
 import org.app.billions.data.model.AppThemeResources
 import org.app.billions.data.model.Theme
 import org.app.billions.data.repository.ThemeRepository
+import org.app.billions.notifications.NotificationsManager
+import org.koin.compose.koinInject
 
 class SplashScreenViewModel(
     private val settings: Settings,
-    private val themeRepository: ThemeRepository
+    private val themeRepository: ThemeRepository,
+    private val notificationsManager: NotificationsManager
 ) : ViewModel() {
 
     private val FIRST_LAUNCH_KEY = "first_launch"
+    private val KEY_CHALLENGE = "challenge_enabled"
+    private val KEY_HOUR = "daily_hour"
+    private val KEY_MINUTE = "daily_minute"
 
     private val _uiState = MutableStateFlow(SplashUiState())
     val uiState: StateFlow<SplashUiState> = _uiState
@@ -27,12 +33,23 @@ class SplashScreenViewModel(
     init {
         viewModelScope.launch {
             themeRepository.initializeThemes()
+
             val currentTheme = themeRepository.getCurrentTheme()
-            println("SplashScreenViewModel init - currentTheme: $currentTheme")
+            val themes = themeRepository.getThemes()
+
+            val challengeEnabled = settings.getBoolean(KEY_CHALLENGE, false)
+            val hour = settings.getInt(KEY_HOUR, 9)
+            val minute = settings.getInt(KEY_MINUTE, 0)
+
             _uiState.update { state ->
                 state.copy(
                     isFirstLaunch = isFirstLaunch(),
-                    currentTheme = currentTheme
+                    currentTheme = currentTheme,
+                    themes = themes,
+                    challengeReminderEnabled = challengeEnabled,
+                    dailyReminderHour = hour,
+                    dailyReminderMinute = minute,
+                    isReady = true
                 )
             }
         }
@@ -43,31 +60,71 @@ class SplashScreenViewModel(
     }
 
     fun markLaunched() {
-        println("SplashScreenViewModel markLaunched called")
         settings.putBoolean(FIRST_LAUNCH_KEY, false)
         _uiState.update { it.copy(isFirstLaunch = false) }
     }
 
     fun splashDelay(seconds: Long = 1L): Flow<Unit> = flow {
-        println("SplashScreenViewModel splashDelay started with $seconds seconds")
         delay(seconds * 1000)
         emit(Unit)
-        println("SplashScreenViewModel splashDelay emitted Unit")
     }
 
     fun updateTheme(themeId: String) {
         viewModelScope.launch {
-            themeRepository.purchaseTheme(themeId)
             themeRepository.setCurrentTheme(themeId)
-            val theme = themeRepository.getCurrentTheme()
-            _uiState.update { it.copy(currentTheme = theme) }
+
+            val current = themeRepository.getCurrentTheme()
+            val themes = themeRepository.getThemes()
+
+            _uiState.update {
+                it.copy(
+                    currentTheme = current,
+                    themes = themes
+                )
+            }
         }
     }
+
+    fun toggleChallengeReminder() {
+        val current = _uiState.value.challengeReminderEnabled
+        val newValue = !current
+
+        _uiState.update { it.copy(challengeReminderEnabled = newValue) }
+
+        settings.putBoolean(KEY_CHALLENGE, newValue)
+
+        notificationsManager.setChallengeReminder(newValue)
+
+        if (!newValue) {
+            notificationsManager.cancelDailyReminder()
+        }
+    }
+
+    fun updateDailyReminder(hour: Int, minute: Int) {
+
+        _uiState.update {
+            it.copy(
+                dailyReminderHour = hour,
+                dailyReminderMinute = minute
+            )
+        }
+
+        settings.putInt(KEY_HOUR, hour)
+        settings.putInt(KEY_MINUTE, minute)
+
+        notificationsManager.scheduleDailyReminder(hour, minute)
+    }
 }
+
 data class SplashUiState(
     val isFirstLaunch: Boolean = true,
-    val currentTheme: Theme? = null
-)
+    val currentTheme: Theme? = null,
+    val themes: List<Theme> = emptyList(),
 
+    val challengeReminderEnabled: Boolean = false,
+    val dailyReminderHour: Int = 9,
+    val dailyReminderMinute: Int = 0,
+    val isReady: Boolean = false
+)
 
 //_uiState.update { it.copy(isFirstLaunch = true) }

@@ -17,4 +17,5 @@ sealed class Screen(val route: String) {
     data object InAppPurchaseScreen : Screen("in_app_purchase")
     data object DailyGoalsDetailScreen : Screen("dailyGoals")
     data object AboutScreen : Screen("about")
+    data object TodayRings : Screen("todayRings")
 }

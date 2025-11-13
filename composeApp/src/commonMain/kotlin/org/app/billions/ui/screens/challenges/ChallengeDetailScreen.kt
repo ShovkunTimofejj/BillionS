@@ -194,7 +194,9 @@ fun ChallengeDetailScreen(
                     Column(
                         horizontalAlignment = Alignment.CenterHorizontally,
                         modifier = Modifier
-                            .clickable { selectedReward = challenge.reward }
+                            .clickable {
+                                selectedReward = if (selectedReward == challenge.reward) null else challenge.reward
+                            }
                             .shadow(8.dp, RoundedCornerShape(12.dp))
                             .background(cardColor, RoundedCornerShape(12.dp))
                             .padding(8.dp)

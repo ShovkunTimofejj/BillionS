@@ -1,6 +1,8 @@
 package org.app.billions.ui.screens.dashboard
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -21,7 +23,6 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import androidx.compose.material3.Icon
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Flag
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.List
@@ -35,17 +36,21 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.font.FontWeight
 import billions.composeapp.generated.resources.Res
+import billions.composeapp.generated.resources.add_dark_lime
+import billions.composeapp.generated.resources.add_graphite_gold
+import billions.composeapp.generated.resources.add_neon_coral
+import billions.composeapp.generated.resources.add_royal_blue
 import billions.composeapp.generated.resources.bg_dashboard_dark_lime
 import billions.composeapp.generated.resources.bg_dashboard_graphite_gold
 import billions.composeapp.generated.resources.bg_dashboard_neon_coral
 import billions.composeapp.generated.resources.bg_dashboard_royal_blue
-import billions.composeapp.generated.resources.bg_navbar_dark_lime
-import billions.composeapp.generated.resources.bg_navbar_graphite_gold
-import billions.composeapp.generated.resources.bg_navbar_neon_coral
-import billions.composeapp.generated.resources.bg_navbar_royal_blue
+import billions.composeapp.generated.resources.ic_arrow_right
 import org.app.billions.ui.screens.Screen
+import org.app.billions.ui.screens.buttonBar.AppBottomBar
 import org.app.billions.ui.screens.journa.AddEditEntryDialog
 import org.app.billions.ui.screens.journa.ConfettiOverlay
 import org.app.billions.ui.screens.viewModel.JournalViewModel
@@ -81,7 +86,7 @@ fun DashboardScreen(
     }
 
     val contentColor = when (currentTheme?.id) {
-        "dark_lime" -> Color(0xFF00FF00)
+        "dark_lime" -> Color(0xFFB6FE03)
         "neon_coral" -> Color(0xFFFF8FA0)
         "royal_blue" -> Color(0xFF00BFFF)
         "graphite_gold" -> Color(0xFFFFD700)
@@ -96,6 +101,18 @@ fun DashboardScreen(
                 "royal_blue" -> Res.drawable.bg_dashboard_royal_blue
                 "graphite_gold" -> Res.drawable.bg_dashboard_graphite_gold
                 else -> Res.drawable.bg_dashboard_dark_lime
+            }
+        }
+    }
+
+    val addEntry by remember(currentTheme) {
+        derivedStateOf {
+            when (currentTheme?.id) {
+                "dark_lime" -> Res.drawable.add_dark_lime
+                "neon_coral" -> Res.drawable.add_neon_coral
+                "royal_blue" -> Res.drawable.add_royal_blue
+                "graphite_gold" -> Res.drawable.add_graphite_gold
+                else -> Res.drawable.add_dark_lime
             }
         }
     }
@@ -115,82 +132,70 @@ fun DashboardScreen(
         Scaffold(
             topBar = {
                 TopAppBar(
-                    title = { Text("Dashboard", color = Color.White) },
-                    colors = TopAppBarDefaults.topAppBarColors(containerColor = barColor),
-                    actions = {
-                        IconButton(onClick = { viewModel.showAddEntryDialog() }) {
-                            Icon(
-                                imageVector = Icons.Default.Add,
-                                contentDescription = "Add Entry",
-                                tint = Color.White
+                    colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent),
+                    title = {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 20.dp, vertical = 12.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = "Dashboard",
+                                color = Color.White,
+                                fontSize = 26.sp,
+                                fontWeight = FontWeight.ExtraBold
                             )
+
+                            Box(
+                                modifier = Modifier
+                                    .align(Alignment.CenterEnd)
+                                    .offset(x = (-8).dp, y = 6.dp)
+                                    .size(60.dp)
+                                    .clickable { viewModel.showAddEntryDialog("steps") },
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Image(
+                                    painter = painterResource(addEntry),
+                                    contentDescription = "Add Entry",
+                                    modifier = Modifier.size(60.dp)
+                                )
+                            }
                         }
                     }
                 )
             },
             bottomBar = {
-                NavigationBar(containerColor = barColor) {
-                    NavigationBarItem(
-                        selected = selectedTabIndex == 0,
-                        onClick = {
-                            selectedTabIndex = 0
-                            navController.navigate(Screen.MainMenuScreen.route) {
-                                popUpTo(Screen.MainMenuScreen.route) { inclusive = true }
-                            }
-                        },
-                        icon = { Icon(Icons.Default.Home, contentDescription = "Dashboard") },
-                        label = { Text("Home", color = Color.White) }
-                    )
-                    NavigationBarItem(
-                        selected = selectedTabIndex == 1,
-                        onClick = {
-                            selectedTabIndex = 1
-                            navController.navigate(Screen.ChallengesScreen.route) {
-                                popUpTo(Screen.MainMenuScreen.route)
-                            }
-                        },
-                        icon = { Icon(Icons.Default.Flag, contentDescription = "Challenges") },
-                        label = { Text("Challenges", color = Color.White) }
-                    )
-                    NavigationBarItem(
-                        selected = selectedTabIndex == 2,
-                        onClick = {
-                            selectedTabIndex = 2
-                            navController.navigate(Screen.JournalScreen.route) {
-                                popUpTo(Screen.MainMenuScreen.route)
-                            }
-                        },
-                        icon = { Icon(Icons.Default.List, contentDescription = "Journal") },
-                        label = { Text("Journal", color = Color.White) }
-                    )
-                    NavigationBarItem(
-                        selected = selectedTabIndex == 3,
-                        onClick = {
-                            selectedTabIndex = 3
-                            navController.navigate(Screen.SettingsScreen.route) {
-                                launchSingleTop = true
-                            }
-                        },
-                        icon = { Icon(Icons.Default.Settings, contentDescription = "Settings") },
-                        label = { Text("Settings", color = Color.White) }
-                    )
-                }
+                AppBottomBar(
+                    navController = navController,
+                    selectedTabIndex = selectedTabIndex,
+                    onTabSelected = { selectedTabIndex = it },
+                    barColor = barColor,
+                    currentTheme = currentTheme
+
+                )
             },
             containerColor = Color.Transparent
         ) { paddingValues ->
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(paddingValues)
-                    .verticalScroll(rememberScrollState())
-            ) {
-                if (state.entries.isEmpty()) {
+            if (state.entries.isEmpty()) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(paddingValues),
+                    contentAlignment = Alignment.Center
+                ) {
                     EmptyView(
-                        message = "Let's add your first entry",
-                        onAddEntry = { viewModel.showAddEntryDialog() },
+                        onAddEntry = { viewModel.showAddEntryDialog("steps") },
                         currentTheme = currentTheme
                     )
-                } else {
+                }
+            } else {
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(paddingValues)
+                        .verticalScroll(rememberScrollState())
+                ) {
                     Card(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -199,14 +204,26 @@ fun DashboardScreen(
                         colors = CardDefaults.cardColors(containerColor = cardColor)
                     ) {
                         Column(modifier = Modifier.padding(16.dp)) {
-                            Text("Lifetime Counter", color = contentColor, fontSize = 18.sp)
-                            Spacer(Modifier.height(8.dp))
-                            OdometerView(
-                                steps = state.entries.sumOf { it.steps },
-                                distanceMeters = state.entries.sumOf { it.distanceMeters },
-                                calories = state.entries.sumOf { it.activeEnergyKcal },
-                                color = contentColor
+                            Text(
+                                text = "Lifetime Counter",
+                                color = contentColor,
+                                fontSize = 18.sp
                             )
+                            Spacer(Modifier.height(8.dp))
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .background(Color.Transparent, RoundedCornerShape(8.dp))
+                                    .padding(horizontal = 8.dp, vertical = 6.dp),
+                                horizontalArrangement = Arrangement.Center
+                            ) {
+                                OdometerView(
+                                    steps = state.entries.sumOf { it.steps },
+                                    distanceMeters = state.entries.sumOf { it.distanceMeters },
+                                    calories = state.entries.sumOf { it.activeEnergyKcal },
+                                    color = Color.White
+                                )
+                            }
                         }
                     }
 
@@ -218,34 +235,79 @@ fun DashboardScreen(
                         colors = CardDefaults.cardColors(containerColor = cardColor)
                     ) {
                         Column(modifier = Modifier.padding(16.dp)) {
-                            Text("Today Rings", color = contentColor, fontSize = 18.sp)
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    "Today Rings",
+                                    color = contentColor,
+                                    fontSize = 18.sp
+                                )
+
+                                Box(
+                                    modifier = Modifier
+                                        .size(28.dp)
+                                        .clickable { navController.navigate(Screen.TodayRings.route) },
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Image(
+                                        painter = painterResource(Res.drawable.ic_arrow_right),
+                                        contentDescription = "Open Today Rings",
+                                        modifier = Modifier.size(24.dp)
+                                    )
+                                }
+                            }
+
                             Spacer(Modifier.height(8.dp))
-                            val stepsToday = state.entries.sumOf { it.steps }
-                            val distanceToday = state.entries.sumOf { it.distanceMeters }
-                            val caloriesToday = state.entries.sumOf { it.activeEnergyKcal }
+
+                            val entries = state.entries
+
+                            val stepsToday by remember(entries) {
+                                derivedStateOf { entries.sumOf { it.steps } }
+                            }
+                            val distanceToday by remember(entries) {
+                                derivedStateOf { entries.sumOf { it.distanceMeters } }
+                            }
+                            val caloriesToday by remember(entries) {
+                                derivedStateOf { entries.sumOf { it.activeEnergyKcal } }
+                            }
+
                             Row(
                                 horizontalArrangement = Arrangement.SpaceAround,
+                                verticalAlignment = Alignment.CenterVertically,
                                 modifier = Modifier.fillMaxWidth()
                             ) {
                                 val goals = viewModel.dailyGoals.value
 
                                 RingView(
                                     progress = stepsToday.toFloat() / goals.stepGoal,
-                                    label = "Steps",
+                                    label = "Step",
                                     color = contentColor,
-                                    goalReached = stepsToday >= goals.stepGoal
+                                    goalReached = stepsToday >= goals.stepGoal,
+                                    size = 70.dp
                                 )
-                                RingView(
-                                    progress = distanceToday.toFloat() / goals.distanceGoal,
-                                    label = "Distance",
-                                    color = contentColor,
-                                    goalReached = distanceToday >= goals.distanceGoal
-                                )
+
+                                Column(
+                                    horizontalAlignment = Alignment.CenterHorizontally,
+                                    modifier = Modifier.offset(y = (-8).dp)
+                                ) {
+                                    RingView(
+                                        progress = distanceToday.toFloat() / goals.distanceGoal,
+                                        label = "Distance",
+                                        color = contentColor,
+                                        goalReached = distanceToday >= goals.distanceGoal,
+                                        size = 100.dp
+                                    )
+                                }
+
                                 RingView(
                                     progress = caloriesToday.toFloat() / goals.calorieGoal,
                                     label = "Calories",
                                     color = contentColor,
-                                    goalReached = caloriesToday >= goals.calorieGoal
+                                    goalReached = caloriesToday >= goals.calorieGoal,
+                                    size = 70.dp
                                 )
                             }
                         }
@@ -254,46 +316,42 @@ fun DashboardScreen(
                     Card(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(16.dp),
+                            .padding(12.dp),
                         shape = RoundedCornerShape(12.dp),
-                        colors = CardDefaults.cardColors(containerColor = cardColor)
+                        colors = CardDefaults.cardColors(containerColor = Color.Transparent)
                     ) {
                         Column(modifier = Modifier.padding(16.dp)) {
-                            Text("Quick Add", color = contentColor, fontSize = 18.sp)
-                            Spacer(Modifier.height(8.dp))
                             Row(
                                 horizontalArrangement = Arrangement.SpaceAround,
                                 modifier = Modifier.fillMaxWidth()
                             ) {
-                                PrimaryButton(
-                                    text = "+Steps",
-                                    onClick = { viewModel.showAddEntryDialog() },
-                                    backgroundColor = contentColor.copy(alpha = 0.2f),
-                                    textColor = contentColor
+                                SmallAddCard(
+                                    label = "Steps",
+                                    textColor = Color.White,
+                                    bgColor = cardColor,
+                                    onClick = { viewModel.showAddEntryDialog("steps") }
                                 )
-
-                                PrimaryButton(
-                                    text = "+Distance",
-                                    onClick = { viewModel.showAddEntryDialog() },
-                                    backgroundColor = contentColor.copy(alpha = 0.2f),
-                                    textColor = contentColor
+                                SmallAddCard(
+                                    label = "Distance",
+                                    textColor = Color.White,
+                                    bgColor = cardColor,
+                                    onClick = { viewModel.showAddEntryDialog("distance") }
                                 )
-
-                                PrimaryButton(
-                                    text = "+Calories",
-                                    onClick = { viewModel.showAddEntryDialog() },
-                                    backgroundColor = contentColor.copy(alpha = 0.2f),
-                                    textColor = contentColor
+                                SmallAddCard(
+                                    label = "Calories",
+                                    textColor = Color.White,
+                                    bgColor = cardColor,
+                                    onClick = { viewModel.showAddEntryDialog("calories") }
                                 )
                             }
                         }
                     }
 
                     HighlightsCard(
-                        entries = state.entries,
+                        viewModel = viewModel,
+                        navController = navController,
                         contentColor = contentColor,
-                        cardBackground = cardColor,
-                        onClick = { navController.navigate(Screen.ComparisonScreen.route) }
+                        cardBackground = cardColor
                     )
                 }
             }
@@ -302,14 +360,16 @@ fun DashboardScreen(
         if (viewModel.showAddDialog.value) {
             AddEditEntryDialog(
                 editing = viewModel.editingEntry.value,
-                onSave = { viewModel.saveEntry(it) },
+                typeFromViewModel = viewModel.state.value.activeAddType,
+                onSave = {
+                    viewModel.saveEntry(it) },
                 onCancel = { viewModel.hideAddEntryDialog() },
                 splashScreenViewModel = splashScreenViewModel
             )
         }
 
         if (state.successEvent) {
-            ConfettiOverlay()
+            ConfettiOverlay(currentTheme)
             LaunchedEffect(Unit) {
                 kotlinx.coroutines.delay(1200)
                 viewModel.consumeSuccess()

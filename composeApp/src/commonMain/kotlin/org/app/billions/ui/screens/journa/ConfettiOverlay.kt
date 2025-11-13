@@ -15,14 +15,53 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.rotate
+import org.app.billions.data.model.Theme
 
 @Composable
-fun ConfettiOverlay() {
-    val particles = remember { List(150) { ConfettiParticle() } }
+fun ConfettiOverlay(currentTheme: Theme?) {
+    val colors = remember(currentTheme) {
+        when (currentTheme?.id) {
+            "dark_lime" -> listOf(
+                Color(0xFFB6FE03),
+                Color(0xFF9DFF57),
+                Color(0xFFD4FF80),
+                Color(0xFF76FF00)
+            )
+            "neon_coral" -> listOf(
+                Color(0xFFFF2C52),
+                Color(0xFFFF5F7A),
+                Color(0xFFFF8FA0),
+                Color(0xFFFFB5C0)
+            )
+            "royal_blue" -> listOf(
+                Color(0xFF699BFF),
+                Color(0xFF81B4FF),
+                Color(0xFF4F7DFF),
+                Color(0xFFA7C5FF)
+            )
+            "graphite_gold" -> listOf(
+                Color(0xFFFFD700),
+                Color(0xFFFFC000),
+                Color(0xFFFFE066),
+                Color(0xFFFFF099)
+            )
+            else -> listOf(
+                Color(0xFFB6FE03),
+                Color(0xFF00FFAA),
+                Color(0xFF66FF99),
+                Color(0xFFAAFF66)
+            )
+        }
+    }
+
+    val particles = remember {
+        List(150) { ConfettiParticle(color = colors.random()) }
+    }
 
     Box(Modifier.fillMaxSize()) {
         particles.forEach { particle ->
@@ -54,7 +93,7 @@ fun ConfettiOverlay() {
                             drawRect(
                                 color = particle.color.copy(alpha = particle.alpha),
                                 topLeft = Offset(x - particle.width / 2, y - particle.height / 2),
-                                size = androidx.compose.ui.geometry.Size(particle.width, particle.height)
+                                size = Size(particle.width, particle.height)
                             )
                         }
                         ConfettiType.CURLY -> {
@@ -87,7 +126,7 @@ private data class ConfettiParticle(
     val height: Float = 8f + kotlin.random.Random.nextFloat() * 6f,
     val alpha: Float = 0.6f + kotlin.random.Random.nextFloat() * 0.4f,
     val spin: Float = 0.3f + kotlin.random.Random.nextFloat() * 1.2f,
-    val color: Color = Color(0xFF00FF00),
+    val color: Color,
     val type: ConfettiType = if (kotlin.random.Random.nextBoolean()) ConfettiType.RECTANGLE else ConfettiType.CURLY
 )
 

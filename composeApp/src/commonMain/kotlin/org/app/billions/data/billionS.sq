@@ -13,7 +13,8 @@ CREATE TABLE ActivitySampleEntity (
     steps INTEGER NOT NULL,
     distanceMeters REAL NOT NULL,
     activeEnergyKcal REAL NOT NULL,
-    source TEXT NOT NULL
+    source TEXT NOT NULL,
+    note TEXT NOT NULL DEFAULT ''
 );
 
 CREATE TABLE DailySummaryEntity (
@@ -58,7 +59,8 @@ CREATE TABLE ThemeEntity (
 );
 
 CREATE TABLE CurrentThemeEntity (
-    themeId TEXT NOT NULL PRIMARY KEY
+    id INTEGER NOT NULL PRIMARY KEY,
+    themeId TEXT NOT NULL
 );
 
 INSERT INTO ThemeEntity(id, name, isPurchased, backgroundRes, logoRes, monocleRes, primaryColor, splashText)
@@ -92,17 +94,21 @@ clearUser:
 DELETE FROM UserEntity;
 
 getActivityByDate:
-SELECT * FROM ActivitySampleEntity WHERE date LIKE ?;
+SELECT id, date, steps, distanceMeters, activeEnergyKcal, source, note
+FROM ActivitySampleEntity
+WHERE date LIKE ?;
+
 
 insertActivity:
-INSERT INTO ActivitySampleEntity(date, steps, distanceMeters, activeEnergyKcal, source)
-VALUES (?, ?, ?, ?, ?);
+INSERT INTO ActivitySampleEntity(date, steps, distanceMeters, activeEnergyKcal, source, note)
+VALUES (?, ?, ?, ?, ?, ?);
 
 getChallenges:
 SELECT * FROM ChallengeEntity;
 
 getActivityBetween:
-SELECT * FROM ActivitySampleEntity
+SELECT id, date, steps, distanceMeters, activeEnergyKcal, source, note
+FROM ActivitySampleEntity
 WHERE date BETWEEN ? AND ?;
 
 updateChallenge:
@@ -117,18 +123,21 @@ getThemes:
 SELECT * FROM ThemeEntity;
 
 getAllActivity:
-SELECT * FROM ActivitySampleEntity;
+SELECT id, date, steps, distanceMeters, activeEnergyKcal, source, note
+FROM ActivitySampleEntity;
 
 deleteActivity:
 DELETE FROM ActivitySampleEntity WHERE id = ?;
 
 updateActivity:
 UPDATE ActivitySampleEntity
-SET date = ?, steps = ?, distanceMeters = ?, activeEnergyKcal = ?, source = ?
+SET date = ?, steps = ?, distanceMeters = ?, activeEnergyKcal = ?, source = ?, note = ?
 WHERE id = ?;
 
 getActivityById:
-SELECT * FROM ActivitySampleEntity WHERE id = ?;
+SELECT id, date, steps, distanceMeters, activeEnergyKcal, source, note
+FROM ActivitySampleEntity
+WHERE id = ?;
 
 insertTheme:
 INSERT OR REPLACE INTO ThemeEntity(
@@ -144,4 +153,11 @@ VALUES (?, ?, ?);
 
 clearDailyGoals:
 DELETE FROM DailyGoals;
+
+getThemeById:
+SELECT * FROM ThemeEntity WHERE id = ? LIMIT 1;
+
+clearCurrentTheme:
+DELETE FROM CurrentThemeEntity;
+
 
