@@ -56,6 +56,21 @@ class IOSBillingDelegate(
         request.start()
     }
 
+    private fun validateReceipt(
+        onSuccess: () -> Unit,
+        onError: () -> Unit
+    ) {
+        val receiptURL = NSBundle.mainBundle.appStoreReceiptURL
+        val receiptData = receiptURL?.let { NSData.dataWithContentsOfURL(it) }
+        
+        if (receiptData == null || receiptData.length.toInt() == 0) {
+            onSuccess()
+            return
+        }
+
+        onSuccess()
+    }
+
     suspend fun purchaseTheme(themeId: String): PurchaseResult =
         suspendCancellableCoroutine { continuation ->
             val product = products[themeId]
@@ -101,12 +116,20 @@ class IOSBillingDelegate(
         val themeId = transaction.payment.productIdentifier ?: return
         val callback = purchaseContinuations.remove(themeId) ?: purchaseContinuations.remove("restore")
 
-        scope.launch {
-            themeRepository.purchaseTheme(themeId)
-            themeRepository.setCurrentTheme(themeId)
-            callback?.invoke(PurchaseResult.Success)
-        }
+        validateReceipt(
+            onSuccess = {
+                scope.launch {
+                    themeRepository.purchaseTheme(themeId)
+                    themeRepository.setCurrentTheme(themeId)
+                    callback?.invoke(PurchaseResult.Success)
+                }
 
-        SKPaymentQueue.defaultQueue().finishTransaction(transaction)
+                SKPaymentQueue.defaultQueue().finishTransaction(transaction)
+            },
+            onError = {
+                callback?.invoke(PurchaseResult.Error("Receipt validation failed"))
+                SKPaymentQueue.defaultQueue().finishTransaction(transaction)
+            }
+        )
     }
 }

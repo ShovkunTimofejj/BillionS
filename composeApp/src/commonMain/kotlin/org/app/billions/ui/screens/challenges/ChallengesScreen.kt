@@ -242,6 +242,12 @@ fun ChallengeCard(
     cardColor: Color,
     contentColor: Color
 ) {
+    val reward = when (challenge.type) {
+        ChallengeType.Sprint7 -> RewardType.Bronze
+        ChallengeType.StreakBuilder14 -> RewardType.Silver
+        ChallengeType.Marathon30 -> RewardType.Gold
+    }
+
     val totalDays = when (challenge.type) {
         ChallengeType.Marathon30 -> 30
         ChallengeType.Sprint7 -> 7
@@ -250,14 +256,31 @@ fun ChallengeCard(
 
     val totalSteps = challenge.goal.toInt()
     val currentSteps = (challenge.progress * challenge.goal).toInt()
-    val today = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date
 
-    val startDate = Instant.fromEpochMilliseconds(challenge.startDate)
-        .toLocalDateTime(TimeZone.currentSystemDefault())
-        .date
+    val today = Clock.System.now()
+        .toLocalDateTime(TimeZone.currentSystemDefault()).date
 
-    val daysPassed = startDate.daysUntil(today).coerceAtLeast(0)
-    val progress = challenge.progress.coerceIn(0.0, 1.0)
+    val startDate = if (challenge.status == ChallengeStatus.Available) {
+        today
+    } else {
+        Instant.fromEpochMilliseconds(challenge.startDate)
+            .toLocalDateTime(TimeZone.currentSystemDefault())
+            .date
+    }
+
+    val rawDaysPassed = if (challenge.status == ChallengeStatus.Available) 0
+    else startDate.daysUntil(today).coerceAtLeast(0)
+
+    val daysPassed = rawDaysPassed.coerceAtMost(totalDays)
+
+    val progress = (currentSteps.toFloat() / totalSteps.toFloat())
+        .coerceIn(0f, 1f)
+
+    val rewardRes = when (reward) {
+        RewardType.Bronze -> Res.drawable.ic_medal_bronze
+        RewardType.Silver -> Res.drawable.ic_medal_silver
+        RewardType.Gold -> Res.drawable.ic_medal_gold
+    }
 
     Card(
         modifier = Modifier
@@ -302,7 +325,7 @@ fun ChallengeCard(
                 ) {
                     Box(
                         modifier = Modifier
-                            .fillMaxWidth(progress.toFloat())
+                            .fillMaxWidth(progress)
                             .height(12.dp)
                             .clip(RoundedCornerShape(50))
                             .background(contentColor)
@@ -320,18 +343,13 @@ fun ChallengeCard(
                         color = Color.White.copy(alpha = 0.9f),
                         fontSize = 14.sp
                     )
+
                     Text(
                         text = "$daysPassed / $totalDays days",
                         color = Color.White.copy(alpha = 0.9f),
                         fontSize = 14.sp
                     )
                 }
-            }
-
-            val rewardRes = when (challenge.reward) {
-                RewardType.Bronze -> Res.drawable.ic_medal_bronze
-                RewardType.Silver -> Res.drawable.ic_medal_silver
-                RewardType.Gold -> Res.drawable.ic_medal_gold
             }
 
             Image(

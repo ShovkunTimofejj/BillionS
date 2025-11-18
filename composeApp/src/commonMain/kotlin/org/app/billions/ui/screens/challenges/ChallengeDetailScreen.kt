@@ -15,7 +15,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowBack
@@ -57,6 +59,7 @@ import billions.composeapp.generated.resources.ic_medal_bronze
 import billions.composeapp.generated.resources.ic_medal_gold
 import billions.composeapp.generated.resources.ic_medal_silver
 import org.app.billions.data.model.ChallengeStatus
+import org.app.billions.data.model.ChallengeType
 import org.app.billions.data.model.RewardType
 import org.app.billions.ui.screens.viewModel.ChallengesViewModel
 import org.app.billions.ui.screens.viewModel.SplashScreenViewModel
@@ -79,6 +82,14 @@ fun ChallengeDetailScreen(
         Text("Challenge not found", color = Color.White)
         return
     }
+
+    val autoReward: RewardType = when (challenge.type) {
+        ChallengeType.Sprint7 -> RewardType.Bronze
+        ChallengeType.StreakBuilder14 -> RewardType.Silver
+        ChallengeType.Marathon30 -> RewardType.Gold
+    }
+
+    var selectedReward by remember { mutableStateOf<RewardType?>(null) }
 
     val backgroundRes by remember(currentTheme) {
         derivedStateOf {
@@ -116,7 +127,11 @@ fun ChallengeDetailScreen(
         else -> Color(0xFF00FF00)
     }
 
-    var selectedReward by remember { mutableStateOf<RewardType?>(null) }
+    val rewardRes = when (autoReward) {
+        RewardType.Bronze -> Res.drawable.ic_medal_bronze
+        RewardType.Silver -> Res.drawable.ic_medal_silver
+        RewardType.Gold -> Res.drawable.ic_medal_gold
+    }
 
     Box(modifier = Modifier.fillMaxSize()) {
         Image(
@@ -143,7 +158,8 @@ fun ChallengeDetailScreen(
             Column(
                 modifier = Modifier
                     .padding(paddingValues)
-                    .padding(16.dp),
+                    .padding(16.dp)
+                    .verticalScroll(rememberScrollState()),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Box(contentAlignment = Alignment.Center, modifier = Modifier.size(200.dp)) {
@@ -170,9 +186,8 @@ fun ChallengeDetailScreen(
                 )
 
                 Spacer(Modifier.height(16.dp))
-
                 Text(
-                    "Rewards",
+                    "Reward",
                     color = Color.White,
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Bold
@@ -180,53 +195,41 @@ fun ChallengeDetailScreen(
 
                 Spacer(Modifier.height(8.dp))
 
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceEvenly,
-                    verticalAlignment = Alignment.CenterVertically
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier
+                        .clickable {
+                            selectedReward =
+                                if (selectedReward == autoReward) null else autoReward
+                        }
+                        .shadow(8.dp, RoundedCornerShape(12.dp))
+                        .background(cardColor, RoundedCornerShape(12.dp))
+                        .padding(8.dp)
                 ) {
-                    val rewardRes = when (challenge.reward) {
-                        RewardType.Bronze -> Res.drawable.ic_medal_bronze
-                        RewardType.Silver -> Res.drawable.ic_medal_silver
-                        RewardType.Gold -> Res.drawable.ic_medal_gold
-                    }
-
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        modifier = Modifier
-                            .clickable {
-                                selectedReward = if (selectedReward == challenge.reward) null else challenge.reward
-                            }
-                            .shadow(8.dp, RoundedCornerShape(12.dp))
-                            .background(cardColor, RoundedCornerShape(12.dp))
-                            .padding(8.dp)
-                    ) {
-                        Image(
-                            painter = painterResource(rewardRes),
-                            contentDescription = "${challenge.reward.name} medal",
-                            modifier = Modifier.size(96.dp)
-                        )
-                        Spacer(Modifier.height(4.dp))
-                        Text(
-                            challenge.reward.name,
-                            color = contentColor,
-                            fontWeight = FontWeight.Bold,
-                            textAlign = TextAlign.Center,
-                            fontSize = 16.sp
-                        )
-                    }
+                    Image(
+                        painter = painterResource(rewardRes),
+                        contentDescription = "${autoReward.name} medal",
+                        modifier = Modifier.size(96.dp)
+                    )
+                    Spacer(Modifier.height(4.dp))
+                    Text(
+                        autoReward.name,
+                        color = contentColor,
+                        fontWeight = FontWeight.Bold,
+                        textAlign = TextAlign.Center,
+                        fontSize = 16.sp
+                    )
                 }
 
                 Spacer(Modifier.height(16.dp))
 
                 selectedReward?.let { reward ->
-                    val rewardRes = when (reward) {
+                    val rewardIcon = when (reward) {
                         RewardType.Bronze -> Res.drawable.ic_medal_bronze
                         RewardType.Silver -> Res.drawable.ic_medal_silver
                         RewardType.Gold -> Res.drawable.ic_medal_gold
                     }
 
-                    Spacer(Modifier.height(16.dp))
                     Column(
                         horizontalAlignment = Alignment.CenterHorizontally,
                         modifier = Modifier
@@ -235,7 +238,7 @@ fun ChallengeDetailScreen(
                             .padding(16.dp)
                     ) {
                         Image(
-                            painter = painterResource(rewardRes),
+                            painter = painterResource(rewardIcon),
                             contentDescription = "${reward.name} medal",
                             modifier = Modifier
                                 .size(160.dp)
@@ -243,7 +246,7 @@ fun ChallengeDetailScreen(
                         )
                         Spacer(Modifier.height(8.dp))
                         Text(
-                            text = reward.name,
+                            reward.name,
                             color = contentColor,
                             fontWeight = FontWeight.Bold,
                             fontSize = 20.sp
@@ -251,9 +254,12 @@ fun ChallengeDetailScreen(
                         Spacer(Modifier.height(4.dp))
                         Text(
                             text = when (reward) {
-                                RewardType.Bronze -> "Awarded for completing the challenge at the Bronze level."
-                                RewardType.Silver -> "Awarded for higher achievement in the challenge."
-                                RewardType.Gold -> "Awarded for the best performance and full completion."
+                                RewardType.Bronze ->
+                                    "Awarded for completing the Sprint 7 challenge."
+                                RewardType.Silver ->
+                                    "Awarded for completing the StreakBuilder 14 challenge."
+                                RewardType.Gold ->
+                                    "Awarded for completing the Marathon 30 challenge."
                             },
                             color = Color.White,
                             fontSize = 16.sp,
