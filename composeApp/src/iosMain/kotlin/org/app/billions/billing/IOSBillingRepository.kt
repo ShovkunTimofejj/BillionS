@@ -41,7 +41,7 @@ class IOSBillingDelegate(
 ) : NSObject(), SKProductsRequestDelegateProtocol, SKPaymentTransactionObserverProtocol {
 
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
-    private val themeProducts = setOf("theme_neon_coral", "theme_royal_blue", "theme_graphite_gold")
+    private val themeProducts = setOf("neon_coral", "royal_blue", "graphite_gold")
     private val products = mutableMapOf<String, SKProduct>()
     private val purchaseContinuations = mutableMapOf<String, (PurchaseResult) -> Unit>()
 
