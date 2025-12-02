@@ -5,6 +5,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
 import org.app.billions.data.model.Theme
@@ -48,6 +49,24 @@ class IOSBillingDelegate(
     init {
         SKPaymentQueue.defaultQueue().addTransactionObserver(this)
         fetchProducts()
+
+        PromotionConnector.onPromotionReceived = { productId ->
+            println(" IOSBillingDelegate processing promotion → $productId")
+            scope.launch {
+                autoPurchaseFromPromotion(productId)
+            }
+        }
+    }
+
+    private suspend fun autoPurchaseFromPromotion(productId: String) {
+        val product = products[productId]
+        if (product == null) {
+            println(" Promotion product not loaded: $productId")
+            return
+        }
+        SKPaymentQueue.defaultQueue().addPayment(
+            SKPayment.paymentWithProduct(product)
+        )
     }
 
     private fun fetchProducts() {
@@ -84,8 +103,19 @@ class IOSBillingDelegate(
 
     suspend fun restorePurchases(): PurchaseResult =
         suspendCancellableCoroutine { continuation ->
-            purchaseContinuations["restore"] = { result -> continuation.resume(result) }
+            purchaseContinuations["restore"] = { result ->
+                if (continuation.isActive) continuation.resume(result)
+            }
+
             SKPaymentQueue.defaultQueue().restoreCompletedTransactions()
+
+            scope.launch {
+                delay(5000)
+                if (purchaseContinuations.containsKey("restore")) {
+                    purchaseContinuations.remove("restore")
+                    if (continuation.isActive) continuation.resume(PurchaseResult.Failure)
+                }
+            }
         }
 
     override fun productsRequest(request: SKProductsRequest, didReceiveResponse: SKProductsResponse) {
@@ -113,18 +143,27 @@ class IOSBillingDelegate(
     }
 
     private fun handlePurchased(transaction: SKPaymentTransaction) {
-        val themeId = transaction.payment.productIdentifier ?: return
-        val callback = purchaseContinuations.remove(themeId) ?: purchaseContinuations.remove("restore")
+        val productId = transaction.payment.productIdentifier
+
+        val callback = if (productId != null) {
+            purchaseContinuations.remove(productId)
+        } else {
+            purchaseContinuations.remove("restore")
+        }
 
         validateReceipt(
             onSuccess = {
                 scope.launch {
-                    themeRepository.purchaseTheme(themeId)
-                    themeRepository.setCurrentTheme(themeId)
-                    callback?.invoke(PurchaseResult.Success)
+                    try {
+                        if (productId != null) {
+                            themeRepository.purchaseTheme(productId)
+                            themeRepository.setCurrentTheme(productId)
+                        }
+                        callback?.invoke(PurchaseResult.Success)
+                    } finally {
+                        SKPaymentQueue.defaultQueue().finishTransaction(transaction)
+                    }
                 }
-
-                SKPaymentQueue.defaultQueue().finishTransaction(transaction)
             },
             onError = {
                 callback?.invoke(PurchaseResult.Error("Receipt validation failed"))
