@@ -104,28 +104,22 @@ fun ChallengeDetailScreen(
     }
 
     val barColor = when (currentTheme?.id) {
-        "dark_lime" -> Color(0x801C2A3A)
-        "neon_coral" -> Color(0x80431C2E)
-        "royal_blue" -> Color(0x801D3B5C)
-        "graphite_gold" -> Color(0x80383737)
-        else -> Color(0x801C2A3A)
+        "dark_lime" -> Color(0xFF334A32)
+        "neon_coral" -> Color(0xFF4B2637)
+        "royal_blue" -> Color(0xFF1C193C)
+        "graphite_gold" -> Color(0xFF3C1919)
+        else -> Color(0xFF334A32)
     }
 
     val cardColor = when (currentTheme?.id) {
-        "dark_lime" -> Color(0xFF1C2A3A)
-        "neon_coral" -> Color(0xFF431C2E)
-        "royal_blue" -> Color(0xFF1D3B5C)
-        "graphite_gold" -> Color(0xFF383737)
-        else -> Color(0xFF1C2A3A)
+        "dark_lime" -> Color(0xFF334A32)
+        "neon_coral" -> Color(0xFF4B2637)
+        "royal_blue" -> Color(0xFF1C193C)
+        "graphite_gold" -> Color(0xFF3C1919)
+        else -> Color(0xFF334A32)
     }
 
-    val contentColor = when (currentTheme?.id) {
-        "dark_lime" -> Color(0xFF00FF00)
-        "neon_coral" -> Color(0xFFFF8FA0)
-        "royal_blue" -> Color(0xFF00BFFF)
-        "graphite_gold" -> Color(0xFFFFD700)
-        else -> Color(0xFF00FF00)
-    }
+    val contentColor = Color(0xFFF6E19F)
 
     val rewardRes = when (autoReward) {
         RewardType.Bronze -> Res.drawable.ic_medal_bronze
@@ -275,7 +269,7 @@ fun ChallengeDetailScreen(
                     modifier = Modifier.fillMaxWidth(),
                     colors = ButtonDefaults.buttonColors(containerColor = cardColor)
                 ) {
-                    Text("View Rewards Gallery", color = contentColor)
+                    Text("View Rewards Gallery", color = Color.White)
                 }
 
                 Spacer(Modifier.height(24.dp))
@@ -297,7 +291,7 @@ fun ChallengeDetailScreen(
                             ChallengeStatus.Available -> "Join"
                             ChallengeStatus.Completed -> "Restart"
                         },
-                        color = contentColor
+                        color = Color.White
                     )
                 }
             }

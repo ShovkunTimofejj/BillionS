@@ -21,46 +21,14 @@ import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.rotate
 import org.app.billions.data.model.Theme
+import kotlin.random.Random
 
 @Composable
 fun ConfettiOverlay(currentTheme: Theme?) {
-    val colors = remember(currentTheme) {
-        when (currentTheme?.id) {
-            "dark_lime" -> listOf(
-                Color(0xFFB6FE03),
-                Color(0xFF9DFF57),
-                Color(0xFFD4FF80),
-                Color(0xFF76FF00)
-            )
-            "neon_coral" -> listOf(
-                Color(0xFFFF2C52),
-                Color(0xFFFF5F7A),
-                Color(0xFFFF8FA0),
-                Color(0xFFFFB5C0)
-            )
-            "royal_blue" -> listOf(
-                Color(0xFF699BFF),
-                Color(0xFF81B4FF),
-                Color(0xFF4F7DFF),
-                Color(0xFFA7C5FF)
-            )
-            "graphite_gold" -> listOf(
-                Color(0xFFFFD700),
-                Color(0xFFFFC000),
-                Color(0xFFFFE066),
-                Color(0xFFFFF099)
-            )
-            else -> listOf(
-                Color(0xFFB6FE03),
-                Color(0xFF00FFAA),
-                Color(0xFF66FF99),
-                Color(0xFFAAFF66)
-            )
-        }
-    }
+    val colors = Color(0xFFF6E19F)
 
     val particles = remember {
-        List(150) { ConfettiParticle(color = colors.random()) }
+        List(150) { ConfettiParticle.random(colors) }
     }
 
     Box(Modifier.fillMaxSize()) {
@@ -118,16 +86,38 @@ fun ConfettiOverlay(currentTheme: Theme?) {
 }
 
 private data class ConfettiParticle(
-    val startX: Float = kotlin.random.Random.nextFloat(),
-    val startY: Float = kotlin.random.Random.nextFloat(),
-    val drift: Float = (kotlin.random.Random.nextFloat() - 0.5f) * 0.4f,
-    val speed: Float = 0.3f + kotlin.random.Random.nextFloat() * 0.7f,
-    val width: Float = 8f + kotlin.random.Random.nextFloat() * 6f,
-    val height: Float = 8f + kotlin.random.Random.nextFloat() * 6f,
-    val alpha: Float = 0.6f + kotlin.random.Random.nextFloat() * 0.4f,
-    val spin: Float = 0.3f + kotlin.random.Random.nextFloat() * 1.2f,
+    val startX: Float = Random.nextFloat(),
+    val startY: Float = Random.nextFloat(),
+    val drift: Float = (Random.nextFloat() - 0.5f) * 0.4f,
+    val speed: Float = 0.2f + Random.nextFloat() * 0.5f,
+    val width: Float,
+    val height: Float,
+    val alpha: Float = 0.8f,
+    val spin: Float = 0.5f + Random.nextFloat() * 1.2f,
     val color: Color,
-    val type: ConfettiType = if (kotlin.random.Random.nextBoolean()) ConfettiType.RECTANGLE else ConfettiType.CURLY
-)
+    val type: ConfettiType
+) {
+    companion object {
+        fun random(color: Color): ConfettiParticle {
+            val type = if (Random.nextFloat() < 0.75f) ConfettiType.RECTANGLE else ConfettiType.CURLY
+
+            return when (type) {
+                ConfettiType.RECTANGLE -> ConfettiParticle(
+                    color = color,
+                    type = type,
+                    width = 20f + Random.nextFloat() * 15f,
+                    height = 20f + Random.nextFloat() * 15f
+                )
+
+                ConfettiType.CURLY -> ConfettiParticle(
+                    color = color,
+                    type = type,
+                    width = 25f + Random.nextFloat() * 20f,
+                    height = 60f + Random.nextFloat() * 40f
+                )
+            }
+        }
+    }
+}
 
 private enum class ConfettiType { RECTANGLE, CURLY }

@@ -106,11 +106,11 @@ fun InAppPurchaseScreen(
     }
 
     val contentColor = when (currentTheme?.id) {
-        "dark_lime" -> Color(0xFF00FF00)
-        "neon_coral" -> Color(0xFFFF8FA0)
-        "royal_blue" -> Color(0xFF00BFFF)
-        "graphite_gold" -> Color(0xFFB59F00)
-        else -> Color(0xFF00FF00)
+        "dark_lime" -> Color(0xFF334A32)
+        "neon_coral" -> Color(0xFF4B2637)
+        "royal_blue" -> Color(0xFF1C193C)
+        "graphite_gold" -> Color(0xFF3C1919)
+        else -> Color(0xFF334A32)
     }
 
     LaunchedEffect(Unit) {
@@ -216,7 +216,7 @@ fun InAppPurchaseScreen(
                                 )
                                 Spacer(Modifier.width(12.dp))
                                 Column {
-                                    Text(theme.name, color = contentColor)
+                                    Text(theme.name, color = Color(0xFFF6E19F))
                                     when {
                                         isActive -> Text("Active", color = Color.Red)
                                         theme.isPurchased -> Text("Purchased", color = Color.Green)
@@ -268,7 +268,7 @@ fun InAppPurchaseScreen(
                                 },
                                 colors = ButtonDefaults.buttonColors(containerColor = contentColor)
                             ) {
-                                Text("Buy", color = Color.Black)
+                                Text("Buy", color = Color(0xFFF6E19F))
                             }
 
                             Spacer(Modifier.width(12.dp))
@@ -298,7 +298,7 @@ fun InAppPurchaseScreen(
                                     }
                                 }
                             }) {
-                                Text("Restore", color = contentColor)
+                                Text("Restore", color = Color(0xFFF6E19F))
                             }
                         }
                     }
@@ -306,7 +306,7 @@ fun InAppPurchaseScreen(
                     PurchaseState.Loading -> {
                         CircularProgressIndicator(
                             modifier = Modifier.padding(16.dp),
-                            color = contentColor
+                            color = Color(0xFFF6E19F)
                         )
                     }
 
@@ -317,7 +317,7 @@ fun InAppPurchaseScreen(
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
                             Text(
                                 "Purchase Failed",
-                                color = contentColor,
+                                color = Color.White,
                                 fontSize = 24.sp,
                                 fontWeight = FontWeight.Bold,
                                 textAlign = TextAlign.Center
@@ -327,7 +327,7 @@ fun InAppPurchaseScreen(
 
                             Text(
                                 errorMessage ?: "Something went wrong.",
-                                color = contentColor,
+                                color = Color.White,
                                 fontSize = 18.sp,
                                 textAlign = TextAlign.Center
                             )
@@ -338,7 +338,7 @@ fun InAppPurchaseScreen(
                                 onClick = { purchaseState = PurchaseState.Idle },
                                 colors = ButtonDefaults.buttonColors(containerColor = contentColor)
                             ) {
-                                Text("Try Again", color = Color.Black, fontSize = 18.sp, fontWeight = FontWeight.Bold)
+                                Text("Try Again", color = Color.White, fontSize = 18.sp, fontWeight = FontWeight.Bold)
                             }
                         }
                     }

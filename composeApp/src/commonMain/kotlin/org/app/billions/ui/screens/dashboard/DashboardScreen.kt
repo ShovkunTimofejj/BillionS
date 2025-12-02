@@ -37,13 +37,11 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import billions.composeapp.generated.resources.Res
-import billions.composeapp.generated.resources.add_dark_lime
-import billions.composeapp.generated.resources.add_graphite_gold
-import billions.composeapp.generated.resources.add_neon_coral
-import billions.composeapp.generated.resources.add_royal_blue
+import billions.composeapp.generated.resources.add_dark
 import billions.composeapp.generated.resources.bg_dashboard_dark_lime
 import billions.composeapp.generated.resources.bg_dashboard_graphite_gold
 import billions.composeapp.generated.resources.bg_dashboard_neon_coral
@@ -70,28 +68,24 @@ fun DashboardScreen(
     val currentTheme = uiState.currentTheme
 
     val barColor = when (currentTheme?.id) {
-        "dark_lime" -> Color(0x801C2A3A)
-        "neon_coral" -> Color(0x80431C2E)
-        "royal_blue" -> Color(0x801D3B5C)
-        "graphite_gold" -> Color(0x80383737)
-        else -> Color(0x801C2A3A)
+        "dark_lime" -> Color(0xFF1F2D1E)
+        "neon_coral" -> Color(0xFF2A151E)
+        "royal_blue" -> Color(0xFF110E32)
+        "graphite_gold" -> Color(0xFF320F0E)
+        else -> Color(0xFF1F2D1E)
     }
 
     val cardColor = when (currentTheme?.id) {
-        "dark_lime" -> Color(0xFF1C2A3A)
-        "neon_coral" -> Color(0xFF431C2E)
-        "royal_blue" -> Color(0xFF1D3B5C)
-        "graphite_gold" -> Color(0xFF383737)
-        else -> Color(0xFF1C2A3A)
+        "dark_lime" -> Color(0xFF334A32)
+        "neon_coral" -> Color(0xFF4B2637)
+        "royal_blue" -> Color(0xFF1C193C)
+        "graphite_gold" -> Color(0xFF3C1919)
+        else -> Color(0xFF334A32)
     }
 
-    val contentColor = when (currentTheme?.id) {
-        "dark_lime" -> Color(0xFFB6FE03)
-        "neon_coral" -> Color(0xFFFF8FA0)
-        "royal_blue" -> Color(0xFF00BFFF)
-        "graphite_gold" -> Color(0xFFFFD700)
-        else -> Color(0xFF00FF00)
-    }
+    val contentColor = Color.White
+
+    val scheduleContentBrush = Color(0xFFF6E19F)
 
     val backgroundRes by remember(currentTheme) {
         derivedStateOf {
@@ -108,11 +102,11 @@ fun DashboardScreen(
     val addEntry by remember(currentTheme) {
         derivedStateOf {
             when (currentTheme?.id) {
-                "dark_lime" -> Res.drawable.add_dark_lime
-                "neon_coral" -> Res.drawable.add_neon_coral
-                "royal_blue" -> Res.drawable.add_royal_blue
-                "graphite_gold" -> Res.drawable.add_graphite_gold
-                else -> Res.drawable.add_dark_lime
+                "dark_lime" -> Res.drawable.add_dark
+                "neon_coral" -> Res.drawable.add_dark
+                "royal_blue" -> Res.drawable.add_dark
+                "graphite_gold" -> Res.drawable.add_dark
+                else -> Res.drawable.add_dark
             }
         }
     }
@@ -284,7 +278,7 @@ fun DashboardScreen(
                                 RingView(
                                     progress = stepsToday.toFloat() / goals.stepGoal,
                                     label = "Step",
-                                    color = contentColor,
+                                    color = scheduleContentBrush,
                                     goalReached = stepsToday >= goals.stepGoal,
                                     size = 70.dp
                                 )
@@ -296,7 +290,7 @@ fun DashboardScreen(
                                     RingView(
                                         progress = distanceToday.toFloat() / goals.distanceGoal,
                                         label = "Distance",
-                                        color = contentColor,
+                                        color = scheduleContentBrush,
                                         goalReached = distanceToday >= goals.distanceGoal,
                                         size = 100.dp
                                     )
@@ -305,7 +299,7 @@ fun DashboardScreen(
                                 RingView(
                                     progress = caloriesToday.toFloat() / goals.calorieGoal,
                                     label = "Calories",
-                                    color = contentColor,
+                                    color = scheduleContentBrush,
                                     goalReached = caloriesToday >= goals.calorieGoal,
                                     size = 70.dp
                                 )
@@ -350,7 +344,7 @@ fun DashboardScreen(
                     HighlightsCard(
                         viewModel = viewModel,
                         navController = navController,
-                        contentColor = contentColor,
+                        contentColor = scheduleContentBrush,
                         cardBackground = cardColor
                     )
                 }
@@ -360,9 +354,9 @@ fun DashboardScreen(
         if (viewModel.showAddDialog.value) {
             AddEditEntryDialog(
                 editing = viewModel.editingEntry.value,
+                prefill = viewModel.state.value.prefillSample,
                 typeFromViewModel = viewModel.state.value.activeAddType,
-                onSave = {
-                    viewModel.saveEntry(it) },
+                onSave = { viewModel.saveEntry(it) },
                 onCancel = { viewModel.hideAddEntryDialog() },
                 splashScreenViewModel = splashScreenViewModel
             )

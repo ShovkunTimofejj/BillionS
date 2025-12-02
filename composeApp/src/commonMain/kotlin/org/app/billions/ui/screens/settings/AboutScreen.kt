@@ -80,21 +80,9 @@ fun AboutScreen(
         else -> Color(0x801C2A3A)
     }
 
-    val sectionContentColor = when (currentTheme?.id) {
-        "dark_lime" -> Color(0xFF00FF00)
-        "neon_coral" -> Color(0xFFFF8FA0)
-        "royal_blue" -> Color(0xFF00BFFF)
-        "graphite_gold" -> Color(0xFFB59F00)
-        else -> Color(0xFF00FF00)
-    }
+    val sectionContentColor = Color(0xFFF6E19F)
 
-    val logoRes = when (currentTheme?.id) {
-        "dark_lime" -> Res.drawable.logo_default
-        "neon_coral" -> Res.drawable.logo_neon_coral
-        "royal_blue" -> Res.drawable.logo_royal_blue
-        "graphite_gold" -> Res.drawable.logo_graphite_gold
-        else -> Res.drawable.logo_default
-    }
+    val logoRes = Res.drawable.logo_default
 
     Box(modifier = Modifier.fillMaxSize()) {
 
@@ -170,7 +158,7 @@ fun AboutScreen(
                 Spacer(Modifier.height(32.dp))
 
                 Text(
-                    "BillionS Fitness Tracker",
+                    "Golden Rush Fitness Tracker",
                     color = sectionContentColor,
                     fontSize = 28.sp,
                     fontWeight = FontWeight.Bold,
@@ -188,7 +176,7 @@ fun AboutScreen(
                 Spacer(Modifier.height(14.dp))
 
                 Text(
-                    "Created by Monocle Guy",
+                    "Created by Golden Rush",
                     color = sectionContentColor,
                     fontSize = 18.sp
                 )

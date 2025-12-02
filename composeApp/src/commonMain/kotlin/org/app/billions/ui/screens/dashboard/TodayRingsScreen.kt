@@ -93,27 +93,21 @@ fun TodayRingsScreen(
     }
 
     val barColor = when (currentTheme?.id) {
-        "dark_lime" -> Color(0x801C2A3A)
-        "neon_coral" -> Color(0x80431C2E)
-        "royal_blue" -> Color(0x801D3B5C)
-        "graphite_gold" -> Color(0x80383737)
-        else -> Color(0x801C2A3A)
+        "dark_lime" -> Color(0xFF1F2D1E)
+        "neon_coral" -> Color(0xFF2A151E)
+        "royal_blue" -> Color(0xFF110E32)
+        "graphite_gold" -> Color(0xFF320F0E)
+        else -> Color(0xFF1F2D1E)
     }
 
-    val ringColor = when (currentTheme?.id) {
-        "dark_lime" -> Color(0xFFB6FE03)
-        "neon_coral" -> Color(0xFFFF2C52)
-        "royal_blue" -> Color(0xFF699BFF)
-        "graphite_gold" -> Color(0xFFFFD700)
-        else -> Color(0xFFB6FE03)
-    }
+    val ringColor = Color(0xFFF6E19F)
 
     val cardColor = when (currentTheme?.id) {
-        "dark_lime" -> Color(0xFF1C2A3A)
-        "neon_coral" -> Color(0xFF431C2E)
-        "royal_blue" -> Color(0xFF1D3B5C)
-        "graphite_gold" -> Color(0xFF383737)
-        else -> Color(0xFF1C2A3A)
+        "dark_lime" -> Color(0xFF334A32)
+        "neon_coral" -> Color(0xFF4B2637)
+        "royal_blue" -> Color(0xFF1C193C)
+        "graphite_gold" -> Color(0xFF3C1919)
+        else -> Color(0xFF334A32)
     }
 
     val stepsToday = state.entries.sumOf { it.steps }
@@ -304,7 +298,7 @@ fun ActivityHistoryItem(date: String, type: String, value: String, color: Color,
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 12.dp, vertical = 10.dp),
+                .padding(horizontal = 20.dp, vertical = 15.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {

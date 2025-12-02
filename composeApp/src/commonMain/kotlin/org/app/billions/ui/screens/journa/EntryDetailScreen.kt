@@ -3,6 +3,7 @@ package org.app.billions.ui.screens.journa
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -60,22 +61,9 @@ import billions.composeapp.generated.resources.bg_dashboard_dark_lime
 import billions.composeapp.generated.resources.bg_dashboard_graphite_gold
 import billions.composeapp.generated.resources.bg_dashboard_neon_coral
 import billions.composeapp.generated.resources.bg_dashboard_royal_blue
-import billions.composeapp.generated.resources.ic_calories_dark_lime
-import billions.composeapp.generated.resources.ic_calories_graphite_gold
-import billions.composeapp.generated.resources.ic_calories_neon_coral
-import billions.composeapp.generated.resources.ic_calories_royal_blue
-import billions.composeapp.generated.resources.ic_distance_dark_lime
-import billions.composeapp.generated.resources.ic_distance_graphite_gold
-import billions.composeapp.generated.resources.ic_distance_neon_coral
-import billions.composeapp.generated.resources.ic_distance_royal_blue
-import billions.composeapp.generated.resources.ic_steps_dark_lime
-import billions.composeapp.generated.resources.ic_steps_dark_lime_big
-import billions.composeapp.generated.resources.ic_steps_graphite_gold
-import billions.composeapp.generated.resources.ic_steps_graphite_gold_big
-import billions.composeapp.generated.resources.ic_steps_neon_coral
-import billions.composeapp.generated.resources.ic_steps_neon_coral_big
-import billions.composeapp.generated.resources.ic_steps_royal_blue
-import billions.composeapp.generated.resources.ic_steps_royal_blue_big
+import billions.composeapp.generated.resources.ic_calories
+import billions.composeapp.generated.resources.ic_distance
+import billions.composeapp.generated.resources.ic_steps
 import org.app.billions.data.model.ActivitySample
 import org.app.billions.data.model.Theme
 import org.app.billions.ui.screens.buttonBar.AppBottomBar
@@ -114,53 +102,65 @@ fun EntryDetailScreen(
     }
 
     val barColor = when (currentTheme?.id) {
-        "dark_lime" -> Color(0x801C2A3A)
-        "neon_coral" -> Color(0x80431C2E)
-        "royal_blue" -> Color(0x801D3B5C)
-        "graphite_gold" -> Color(0x80383737)
-        else -> Color(0x801C2A3A)
+        "dark_lime" -> Color(0xFF1F2D1E)
+        "neon_coral" -> Color(0xFF2A151E)
+        "royal_blue" -> Color(0xFF110E32)
+        "graphite_gold" -> Color(0xFF320F0E)
+        else -> Color(0xFF1F2D1E)
     }
 
     val cardColor = when (currentTheme?.id) {
-        "dark_lime" -> Color(0xFF1C2A3A)
-        "neon_coral" -> Color(0xFF431C2E)
-        "royal_blue" -> Color(0xFF1D3B5C)
-        "graphite_gold" -> Color(0xFF383737)
-        else -> Color(0xFF1C2A3A)
+        "dark_lime" -> Color(0xFF334A32)
+        "neon_coral" -> Color(0xFF4B2637)
+        "royal_blue" -> Color(0xFF1C193C)
+        "graphite_gold" -> Color(0xFF3C1919)
+        else -> Color(0xFF334A32)
     }
 
-    val contentColor = when (currentTheme?.id) {
-        "dark_lime" -> Color(0xFF00FF00)
-        "neon_coral" -> Color(0xFFFF8FA0)
-        "royal_blue" -> Color(0xFF00BFFF)
-        "graphite_gold" -> Color(0xFFFFD700)
-        else -> Color(0xFF00FF00)
-    }
+    val contentColor = Color.White
 
     var selectedBottomNavIndex by remember { mutableStateOf(2) }
 
     val stepsIconRes = when (currentTheme?.id) {
-        "dark_lime" -> Res.drawable.ic_steps_dark_lime_big
-        "neon_coral" -> Res.drawable.ic_steps_neon_coral_big
-        "royal_blue" -> Res.drawable.ic_steps_royal_blue_big
-        "graphite_gold" -> Res.drawable.ic_steps_graphite_gold_big
-        else -> Res.drawable.ic_steps_dark_lime_big
+        "dark_lime" -> Res.drawable.ic_steps
+        "neon_coral" -> Res.drawable.ic_steps
+        "royal_blue" -> Res.drawable.ic_steps
+        "graphite_gold" -> Res.drawable.ic_steps
+        else -> Res.drawable.ic_steps
     }
 
     val distanceIconRes = when (currentTheme?.id) {
-        "dark_lime" -> Res.drawable.ic_distance_dark_lime
-        "neon_coral" -> Res.drawable.ic_distance_neon_coral
-        "royal_blue" -> Res.drawable.ic_distance_royal_blue
-        "graphite_gold" -> Res.drawable.ic_distance_graphite_gold
-        else -> Res.drawable.ic_distance_dark_lime
+        "dark_lime" -> Res.drawable.ic_distance
+        "neon_coral" -> Res.drawable.ic_distance
+        "royal_blue" -> Res.drawable.ic_distance
+        "graphite_gold" -> Res.drawable.ic_distance
+        else -> Res.drawable.ic_distance
     }
 
     val caloriesIconRes = when (currentTheme?.id) {
-        "dark_lime" -> Res.drawable.ic_calories_dark_lime
-        "neon_coral" -> Res.drawable.ic_calories_neon_coral
-        "royal_blue" -> Res.drawable.ic_calories_royal_blue
-        "graphite_gold" -> Res.drawable.ic_calories_graphite_gold
-        else -> Res.drawable.ic_calories_dark_lime
+        "dark_lime" -> Res.drawable.ic_calories
+        "neon_coral" -> Res.drawable.ic_calories
+        "royal_blue" -> Res.drawable.ic_calories
+        "graphite_gold" -> Res.drawable.ic_calories
+        else -> Res.drawable.ic_calories
+    }
+
+    val buttonColorEdit = when (currentTheme?.id) {
+        "dark_lime" -> Color(0xFF334A32)
+        "neon_coral" -> Color(0xFF4B2637)
+        "royal_blue" -> Color(0xFF1C193C)
+        "graphite_gold" -> Color(0xFF3C1919)
+        else -> Color(0xFF334A32)
+    }
+
+    val buttonColorDelete = Color(0xFF780708)
+
+    val buttonColorSimilar = when (currentTheme?.id) {
+        "dark_lime" -> Color(0xFF1F2D1E)
+        "neon_coral" -> Color(0xFF3D0C23)
+        "royal_blue" -> Color(0xFF0C0E3D)
+        "graphite_gold" -> Color(0xFF470C0C)
+        else -> Color(0xFF1F2D1E)
     }
 
     Box(modifier = Modifier.fillMaxSize()) {
@@ -237,7 +237,7 @@ fun EntryDetailScreen(
 
                             Text(
                                 text = entry.date.date.toString(),
-                                color = contentColor,
+                                color = Color(0xFFF6E19F),
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 18.sp,
                                 modifier = Modifier.align(Alignment.CenterHorizontally)
@@ -312,6 +312,13 @@ fun EntryDetailScreen(
                     ) {
                         val buttonShape = RoundedCornerShape(8.dp)
 
+                        val gradientBorder = Brush.linearGradient(
+                            colors = listOf(
+                                Color(0xFFF6E19F),
+                                Color(0xFF90845D)
+                            )
+                        )
+
                         Button(
                             onClick = {
                                 viewModel.startEdit(entry)
@@ -319,12 +326,22 @@ fun EntryDetailScreen(
                             },
                             modifier = Modifier
                                 .weight(1f)
-                                .height(48.dp),
+                                .height(48.dp)
+                                .border(
+                                    width = 2.dp,
+                                    brush = gradientBorder,
+                                    shape = buttonShape
+                                ),
                             shape = buttonShape,
-                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2E3A47)),
+                            colors = ButtonDefaults.buttonColors(containerColor = buttonColorEdit),
                             contentPadding = PaddingValues(vertical = 8.dp)
                         ) {
-                            Text("Edit", color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
+                            Text(
+                                "Edit",
+                                color = Color(0xFFF6E19F),
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.SemiBold
+                            )
                         }
 
                         Button(
@@ -334,12 +351,22 @@ fun EntryDetailScreen(
                             },
                             modifier = Modifier
                                 .weight(1f)
-                                .height(48.dp),
+                                .height(48.dp)
+                                .border(
+                                    width = 2.dp,
+                                    brush = gradientBorder,
+                                    shape = buttonShape
+                                ),
                             shape = buttonShape,
-                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFD32F2F)),
+                            colors = ButtonDefaults.buttonColors(containerColor = buttonColorDelete),
                             contentPadding = PaddingValues(vertical = 8.dp)
                         ) {
-                            Text("Delete", color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
+                            Text(
+                                "Delete",
+                                color = Color(0xFFF6E19F),
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.SemiBold
+                            )
                         }
 
                         Button(
@@ -349,12 +376,22 @@ fun EntryDetailScreen(
                             },
                             modifier = Modifier
                                 .weight(1f)
-                                .height(48.dp),
+                                .height(48.dp)
+                                .border(
+                                    width = 2.dp,
+                                    brush = gradientBorder,
+                                    shape = buttonShape
+                                ),
                             shape = buttonShape,
-                            colors = ButtonDefaults.buttonColors(containerColor = contentColor),
+                            colors = ButtonDefaults.buttonColors(containerColor = buttonColorSimilar),
                             contentPadding = PaddingValues(vertical = 8.dp)
                         ) {
-                            Text("Add Similar", color = cardColor, fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
+                            Text(
+                                "Add Similar",
+                                color = Color(0xFFF6E19F),
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.SemiBold
+                            )
                         }
                     }
                 }
@@ -377,6 +414,7 @@ fun EntryDetailScreen(
                             }
                         },
                         cardColor = cardColor,
+                        splashScreenViewModel = splashScreenViewModel,
                         onExport = { viewModel.exportCsv() }
                     )
                 }
@@ -393,6 +431,7 @@ fun EntryDetailScreen(
                             }
                         },
                         cardColor = cardColor,
+                        splashScreenViewModel = splashScreenViewModel,
                         onExport = { viewModel.exportCsv() }
                     )
                 }
@@ -407,10 +446,28 @@ fun ChartCard(
     entries: List<ActivitySample>,
     metricSelector: (ActivitySample) -> Number,
     cardColor: Color,
+    splashScreenViewModel: SplashScreenViewModel,
     onExport: () -> Unit
 ) {
-    val neonColor = Color(0xFFBFFF00)
+    val uiState by splashScreenViewModel.uiState.collectAsState()
+    val currentTheme = uiState.currentTheme
+    val neonColor = Color(0xFFF6E19F)
     val backgroundColor = Color(0x801C2A3A)
+
+    val buttonColorExport = when (currentTheme?.id) {
+        "dark_lime" -> Color(0xFF1F2D1E)
+        "neon_coral" -> Color(0xFF3D0C23)
+        "royal_blue" -> Color(0xFF0C0E3D)
+        "graphite_gold" -> Color(0xFF470C0C)
+        else -> Color(0xFF1F2D1E)
+    }
+
+    val gradientBorder = Brush.linearGradient(
+        colors = listOf(
+            Color(0xFFF6E19F),
+            Color(0xFF90845D)
+        )
+    )
 
     Card(
         modifier = Modifier
@@ -522,10 +579,21 @@ fun ChartCard(
             Spacer(Modifier.height(12.dp))
             Button(
                 onClick = onExport,
-                colors = ButtonDefaults.buttonColors(containerColor = Color.White),
+                modifier = Modifier
+                    .border(
+                        width = 2.dp,
+                        brush = gradientBorder,
+                        shape = RoundedCornerShape(8.dp)
+                    ),
+                colors = ButtonDefaults.buttonColors(containerColor = buttonColorExport),
                 shape = RoundedCornerShape(8.dp)
             ) {
-                Text("Export CSV", color = Color.Black, fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
+                Text(
+                    "Export CSV",
+                    color = Color(0xFFF6E19F),
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.SemiBold
+                )
             }
         }
     }

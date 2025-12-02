@@ -117,12 +117,18 @@ class JournalViewModel(
         loadEntries(_state.value.filter)
     }
 
-    fun showAddEntryDialog(type: String = "steps", editing: ActivitySample? = null) {
-        _editingEntry.value = editing
+    fun showAddEntryDialog(
+        type: String = "steps",
+        prefill: ActivitySample? = null
+    ) {
+        _editingEntry.value = null
         _showAddDialog.value = true
-        _state.value = _state.value.copy(activeAddType = type)
-    }
 
+        _state.value = _state.value.copy(
+            activeAddType = type,
+            prefillSample = prefill
+        )
+    }
     fun adjustEntry(type: String, delta: Double) {
         scope.launch {
             val today = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date
@@ -171,7 +177,14 @@ class JournalViewModel(
             entry.activeEnergyKcal > 0 -> "calories"
             else -> "steps"
         }
-        showAddEntryDialog(type = type, editing = entry)
+
+        _editingEntry.value = entry
+        _showAddDialog.value = true
+
+        _state.value = _state.value.copy(
+            activeAddType = type,
+            prefillSample = null
+        )
     }
 
     fun saveEntry(entry: ActivitySample) {
@@ -282,7 +295,8 @@ data class JournalState(
     val showStatsSheet: Boolean = false,
     val errorMessage: String? = null,
     val successEvent: Boolean = false,
-    val activeAddType: String? = null
+    val activeAddType: String? = null,
+    val prefillSample: ActivitySample? = null
 )
 
 interface PlatformEffects { fun hapticSuccess(); fun hapticError() }

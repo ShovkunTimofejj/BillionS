@@ -88,28 +88,22 @@ fun RewardsGalleryScreen(
     }
 
     val cardColor = when (currentTheme?.id) {
-        "dark_lime" -> Color(0xFF1C2A3A)
-        "neon_coral" -> Color(0xFF431C2E)
-        "royal_blue" -> Color(0xFF1D3B5C)
-        "graphite_gold" -> Color(0xFF383737)
-        else -> Color(0xFF1C2A3A)
+        "dark_lime" -> Color(0xFF334A32)
+        "neon_coral" -> Color(0xFF4B2637)
+        "royal_blue" -> Color(0xFF1C193C)
+        "graphite_gold" -> Color(0xFF3C1919)
+        else -> Color(0xFF334A32)
     }
 
     val highlightColor = when (currentTheme?.id) {
-        "dark_lime" -> Color(0xFF00FF00).copy(alpha = 0.5f)
-        "neon_coral" -> Color(0xFFFF8FA0).copy(alpha = 0.5f)
-        "royal_blue" -> Color(0xFF00BFFF).copy(alpha = 0.5f)
-        "graphite_gold" -> Color(0xFFFFD700).copy(alpha = 0.5f)
-        else -> Color(0xFF00FF00).copy(alpha = 0.5f)
+        "dark_lime" -> Color(0xFF334A32).copy(alpha = 0.5f)
+        "neon_coral" -> Color(0xFF4B2637).copy(alpha = 0.5f)
+        "royal_blue" -> Color(0xFF1C193C).copy(alpha = 0.5f)
+        "graphite_gold" -> Color(0xFF3C1919).copy(alpha = 0.5f)
+        else -> Color(0xFF334A32).copy(alpha = 0.5f)
     }
 
-    val contentColor = when (currentTheme?.id) {
-        "dark_lime" -> Color(0xFF00FF00)
-        "neon_coral" -> Color(0xFFFF8FA0)
-        "royal_blue" -> Color(0xFF00BFFF)
-        "graphite_gold" -> Color(0xFFFFD700)
-        else -> Color(0xFF00FF00)
-    }
+    val contentColor = Color.White
 
     Box(modifier = Modifier.fillMaxSize()) {
         Image(

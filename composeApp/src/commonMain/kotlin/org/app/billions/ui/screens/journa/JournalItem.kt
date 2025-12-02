@@ -48,24 +48,12 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import billions.composeapp.generated.resources.Res
-import billions.composeapp.generated.resources.ic_calories_dark_lime
-import billions.composeapp.generated.resources.ic_calories_graphite_gold
-import billions.composeapp.generated.resources.ic_calories_neon_coral
-import billions.composeapp.generated.resources.ic_calories_royal_blue
-import billions.composeapp.generated.resources.ic_distance_dark_lime
-import billions.composeapp.generated.resources.ic_distance_graphite_gold
-import billions.composeapp.generated.resources.ic_distance_neon_coral
-import billions.composeapp.generated.resources.ic_distance_royal_blue
-import billions.composeapp.generated.resources.ic_steps_dark_lime
-import billions.composeapp.generated.resources.ic_steps_graphite_gold
-import billions.composeapp.generated.resources.ic_steps_neon_coral
-import billions.composeapp.generated.resources.ic_steps_royal_blue
+import billions.composeapp.generated.resources.ic_calories
+import billions.composeapp.generated.resources.ic_distance
+import billions.composeapp.generated.resources.ic_steps
 import kotlinx.coroutines.launch
 import org.app.billions.data.model.Theme
 import org.jetbrains.compose.resources.painterResource
-import kotlin.math.abs
-import kotlin.math.pow
-import kotlin.math.round
 import kotlin.math.roundToInt
 
 @Composable
@@ -83,38 +71,37 @@ fun JournalItem(
     val offsetX = remember { Animatable(0f) }
 
     val stepsIconRes = when (currentTheme?.id) {
-        "dark_lime" -> Res.drawable.ic_steps_dark_lime
-        "neon_coral" -> Res.drawable.ic_steps_neon_coral
-        "royal_blue" -> Res.drawable.ic_steps_royal_blue
-        "graphite_gold" -> Res.drawable.ic_steps_graphite_gold
-        else -> Res.drawable.ic_steps_dark_lime
+        "dark_lime" -> Res.drawable.ic_steps
+        "neon_coral" -> Res.drawable.ic_steps
+        "royal_blue" -> Res.drawable.ic_steps
+        "graphite_gold" -> Res.drawable.ic_steps
+        else -> Res.drawable.ic_steps
     }
 
     val distanceIconRes = when (currentTheme?.id) {
-        "dark_lime" -> Res.drawable.ic_distance_dark_lime
-        "neon_coral" -> Res.drawable.ic_distance_neon_coral
-        "royal_blue" -> Res.drawable.ic_distance_royal_blue
-        "graphite_gold" -> Res.drawable.ic_distance_graphite_gold
-        else -> Res.drawable.ic_distance_dark_lime
+        "dark_lime" -> Res.drawable.ic_distance
+        "neon_coral" -> Res.drawable.ic_distance
+        "royal_blue" -> Res.drawable.ic_distance
+        "graphite_gold" -> Res.drawable.ic_distance
+        else -> Res.drawable.ic_distance
     }
 
     val caloriesIconRes = when (currentTheme?.id) {
-        "dark_lime" -> Res.drawable.ic_calories_dark_lime
-        "neon_coral" -> Res.drawable.ic_calories_neon_coral
-        "royal_blue" -> Res.drawable.ic_calories_royal_blue
-        "graphite_gold" -> Res.drawable.ic_calories_graphite_gold
-        else -> Res.drawable.ic_calories_dark_lime
+        "dark_lime" -> Res.drawable.ic_calories
+        "neon_coral" -> Res.drawable.ic_calories
+        "royal_blue" -> Res.drawable.ic_calories
+        "graphite_gold" -> Res.drawable.ic_calories
+        else -> Res.drawable.ic_calories
     }
 
-    val accentColor = when (currentTheme?.id) {
-        "dark_lime" -> Color(0xFFB6FE03)
-        "neon_coral" -> Color(0xFFFF2C52)
-        "royal_blue" -> Color(0xFF699BFF)
-        "graphite_gold" -> Color(0xFFFFD700)
-        else -> Color(0xFFB6FE03)
+    val editColor = when (currentTheme?.id) {
+        "dark_lime" -> Color(0xFF1F2D1E)
+        "neon_coral" -> Color(0xFF2A151E)
+        "royal_blue" -> Color(0xFF110E32)
+        "graphite_gold" -> Color(0xFF320F0E)
+        else -> Color(0xFF1F2D1E)
     }
 
-    val editColor = Color(0xFF2E3A47)
     val deleteColor = Color(0xFFD32F2F)
 
     Box(
@@ -201,7 +188,7 @@ fun JournalItem(
             ) {
                 Text(
                     text = entry.date.date.toString(),
-                    color = accentColor,
+                    color = Color(0xFFF6E19F),
                     fontWeight = FontWeight.Bold,
                     fontSize = 17.sp
                 )

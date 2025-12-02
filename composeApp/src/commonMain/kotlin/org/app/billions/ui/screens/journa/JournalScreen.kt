@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
@@ -66,6 +67,10 @@ import billions.composeapp.generated.resources.bg_dashboard_dark_lime
 import billions.composeapp.generated.resources.bg_dashboard_graphite_gold
 import billions.composeapp.generated.resources.bg_dashboard_neon_coral
 import billions.composeapp.generated.resources.bg_dashboard_royal_blue
+import billions.composeapp.generated.resources.btn_add_entry_dark_lime
+import billions.composeapp.generated.resources.btn_add_entry_graphite_gold
+import billions.composeapp.generated.resources.btn_add_entry_neon_coral
+import billions.composeapp.generated.resources.btn_add_entry_royal_blue
 import billions.composeapp.generated.resources.ic_filter_custom
 import org.app.billions.data.model.Theme
 import org.app.billions.ui.screens.Screen
@@ -99,28 +104,22 @@ fun JournalScreen(
     }
 
     val barColor = when (currentTheme?.id) {
-        "dark_lime" -> Color(0x801C2A3A)
-        "neon_coral" -> Color(0x80431C2E)
-        "royal_blue" -> Color(0x801D3B5C)
-        "graphite_gold" -> Color(0x80383737)
-        else -> Color(0x801C2A3A)
+        "dark_lime" -> Color(0xFF1F2D1E)
+        "neon_coral" -> Color(0xFF2A151E)
+        "royal_blue" -> Color(0xFF110E32)
+        "graphite_gold" -> Color(0xFF320F0E)
+        else -> Color(0xFF1F2D1E)
     }
 
     val cardColor = when (currentTheme?.id) {
-        "dark_lime" -> Color(0xFF1C2A3A)
-        "neon_coral" -> Color(0xFF431C2E)
-        "royal_blue" -> Color(0xFF1D3B5C)
-        "graphite_gold" -> Color(0xFF383737)
-        else -> Color(0xFF1C2A3A)
+        "dark_lime" -> Color(0xFF334A32)
+        "neon_coral" -> Color(0xFF4B2637)
+        "royal_blue" -> Color(0xFF1C193C)
+        "graphite_gold" -> Color(0xFF3C1919)
+        else -> Color(0xFF334A32)
     }
 
-    val contentColor = when (currentTheme?.id) {
-        "dark_lime" -> Color(0xFF00FF00)
-        "neon_coral" -> Color(0xFFFF8FA0)
-        "royal_blue" -> Color(0xFF00BFFF)
-        "graphite_gold" -> Color(0xFFFFD700)
-        else -> Color(0xFF00FF00)
-    }
+    val contentColor = Color.White
 
     var selectedBottomNavIndex by remember { mutableStateOf(2) }
 
@@ -140,14 +139,15 @@ fun JournalScreen(
                         Box(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(horizontal = 20.dp, vertical = 12.dp),
-                            contentAlignment = Alignment.Center
+                                .padding(horizontal = 20.dp, vertical = 12.dp)
                         ) {
+
                             Text(
                                 text = "Journal",
                                 color = Color.White,
                                 fontSize = 26.sp,
-                                fontWeight = FontWeight.ExtraBold
+                                fontWeight = FontWeight.ExtraBold,
+                                modifier = Modifier.align(Alignment.Center)
                             )
 
                             Image(
@@ -215,6 +215,7 @@ fun JournalScreen(
                 if (viewModel.showAddDialog.value) {
                     AddEditEntryDialog(
                         editing = viewModel.editingEntry.value,
+                        prefill = viewModel.state.value.prefillSample,
                         typeFromViewModel = viewModel.state.value.activeAddType,
                         onSave = { viewModel.saveEntry(it) },
                         onCancel = { viewModel.hideAddEntryDialog() },
@@ -259,15 +260,15 @@ fun ThemedAddEntryButton(
     onClick: () -> Unit,
     currentTheme: Theme?
 ) {
-    val buttonColor = when (currentTheme?.id) {
-        "dark_lime" -> Color(0xFFB6FE03)
-        "neon_coral" -> Color(0xFFFF2C52)
-        "royal_blue" -> Color(0xFF699BFF)
-        "graphite_gold" -> Color(0xFFFFD700)
-        else -> Color(0xFFB6FE03)
+    val backgroundRes = remember(currentTheme) {
+        when (currentTheme?.id) {
+            "dark_lime" -> Res.drawable.btn_add_entry_dark_lime
+            "neon_coral" -> Res.drawable.btn_add_entry_neon_coral
+            "royal_blue" -> Res.drawable.btn_add_entry_royal_blue
+            "graphite_gold" -> Res.drawable.btn_add_entry_graphite_gold
+            else -> Res.drawable.btn_add_entry_dark_lime
+        }
     }
-
-    val textColor = Color.Black
 
     Box(
         modifier = Modifier
@@ -275,20 +276,14 @@ fun ThemedAddEntryButton(
             .padding(bottom = 5.dp),
         contentAlignment = Alignment.Center
     ) {
-        Button(
-            onClick = onClick,
-            colors = ButtonDefaults.buttonColors(containerColor = buttonColor),
-            shape = RoundedCornerShape(8.dp),
+        Image(
+            painter = painterResource(backgroundRes),
+            contentDescription = "Add Entry",
             modifier = Modifier
                 .height(50.dp)
-                .width(160.dp)
-        ) {
-            Text(
-                text = "Add Entry",
-                color = textColor,
-                fontWeight = FontWeight.Bold,
-                fontSize = 18.sp
-            )
-        }
+                .wrapContentWidth()
+                .clickable { onClick() },
+            contentScale = ContentScale.Fit
+        )
     }
 }

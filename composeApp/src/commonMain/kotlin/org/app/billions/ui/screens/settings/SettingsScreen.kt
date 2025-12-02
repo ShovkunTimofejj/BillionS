@@ -3,6 +3,7 @@ package org.app.billions.ui.screens.settings
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.Arrangement
@@ -79,12 +80,7 @@ import billions.composeapp.generated.resources.bg_dashboard_dark_lime
 import billions.composeapp.generated.resources.bg_dashboard_graphite_gold
 import billions.composeapp.generated.resources.bg_dashboard_neon_coral
 import billions.composeapp.generated.resources.bg_dashboard_royal_blue
-import billions.composeapp.generated.resources.ic_logo_dark_lime
-import billions.composeapp.generated.resources.ic_logo_graphite_gold
-import billions.composeapp.generated.resources.ic_logo_neon_coral
-import billions.composeapp.generated.resources.ic_logo_royal_blue
-import billions.composeapp.generated.resources.ic_minus
-import billions.composeapp.generated.resources.ic_plus
+import billions.composeapp.generated.resources.ic_logo
 import billions.composeapp.generated.resources.theme_dark_lime
 import billions.composeapp.generated.resources.theme_graphite_gold
 import billions.composeapp.generated.resources.theme_graphite_gold_locked
@@ -153,28 +149,39 @@ fun SettingsScreen(
     }
 
     val barColor = when (currentTheme?.id) {
-        "dark_lime" -> Color(0x801C2A3A)
-        "neon_coral" -> Color(0x80431C2E)
-        "royal_blue" -> Color(0x801D3B5C)
-        "graphite_gold" -> Color(0x80383737)
-        else -> Color(0x801C2A3A)
+        "dark_lime" -> Color(0xFF1F2D1E)
+        "neon_coral" -> Color(0xFF2A151E)
+        "royal_blue" -> Color(0xFF110E32)
+        "graphite_gold" -> Color(0xFF320F0E)
+        else -> Color(0xFF1F2D1E)
     }
 
     val cardColor = when (currentTheme?.id) {
-        "dark_lime" -> Color(0xFF1C2A3A)
-        "neon_coral" -> Color(0xFF431C2E)
-        "royal_blue" -> Color(0xFF1D3B5C)
-        "graphite_gold" -> Color(0xFF383737)
-        else -> Color(0xFF1C2A3A)
+        "dark_lime" -> Color(0xFF334A32)
+        "neon_coral" -> Color(0xFF4B2637)
+        "royal_blue" -> Color(0xFF1C193C)
+        "graphite_gold" -> Color(0xFF3C1919)
+        else -> Color(0xFF334A32)
     }
 
-    val contentColor = when (currentTheme?.id) {
-        "dark_lime" -> Color(0xFF00FF00)
-        "neon_coral" -> Color(0xFFFF8FA0)
-        "royal_blue" -> Color(0xFF00BFFF)
-        "graphite_gold" -> Color(0xFFB59F00)
-        else -> Color(0xFF00FF00)
+    val buttonColorDelete = Color(0xFF780708)
+
+    val buttonColorExport = when (currentTheme?.id) {
+        "dark_lime" -> Color(0xFF1F2D1E)
+        "neon_coral" -> Color(0xFF3D0C23)
+        "royal_blue" -> Color(0xFF0C0E3D)
+        "graphite_gold" -> Color(0xFF470C0C)
+        else -> Color(0xFF1F2D1E)
     }
+
+    val gradientBorder = Brush.linearGradient(
+        colors = listOf(
+            Color(0xFFF6E19F),
+            Color(0xFF90845D)
+        )
+    )
+
+    val contentColor = Color.White
 
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
@@ -299,7 +306,7 @@ fun SettingsScreen(
                         Box(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .background(sectionBackgroundColor, RoundedCornerShape(16.dp))
+                                .background(cardColor, RoundedCornerShape(16.dp))
                                 .padding(horizontal = 20.dp, vertical = 22.dp)
                         ) {
 
@@ -312,7 +319,7 @@ fun SettingsScreen(
                                     min = 1000,
                                     max = 50000,
                                     step = 100,
-                                    contentColor = sectionContentColor
+                                    contentColor = Color(0xFFF6E19F)
                                 ) {
                                     stepGoal = it
                                     journalViewModel.updateGoals(
@@ -327,7 +334,7 @@ fun SettingsScreen(
                                     min = 100,
                                     max = 50000,
                                     step = 100,
-                                    contentColor = sectionContentColor
+                                    contentColor = Color(0xFFF6E19F)
                                 ) {
                                     distanceGoal = it
                                     journalViewModel.updateGoals(
@@ -342,7 +349,7 @@ fun SettingsScreen(
                                     min = 100,
                                     max = 10000,
                                     step = 50,
-                                    contentColor = sectionContentColor
+                                    contentColor = Color(0xFFF6E19F)
                                 ) {
                                     calorieGoal = it
                                     journalViewModel.updateGoals(
@@ -478,14 +485,19 @@ fun SettingsScreen(
                                     modifier = Modifier
                                         .weight(1f)
                                         .height(44.dp)
+                                        .border(
+                                            width = 2.dp,
+                                            brush = gradientBorder,
+                                            shape = RoundedCornerShape(8.dp)
+                                        )
                                         .clip(RoundedCornerShape(5.dp))
-                                        .background(Color.White)
+                                        .background(buttonColorExport)
                                         .clickable { journalViewModel.exportCsv() },
                                     contentAlignment = Alignment.Center
                                 ) {
                                     Text(
                                         text = "Export CSV",
-                                        color = Color.Black,
+                                        color = Color(0xFFF6E19F),
                                         fontWeight = FontWeight.Bold,
                                         fontSize = 15.sp
                                     )
@@ -495,14 +507,19 @@ fun SettingsScreen(
                                     modifier = Modifier
                                         .weight(1f)
                                         .height(44.dp)
+                                        .border(
+                                            width = 2.dp,
+                                            brush = gradientBorder,
+                                            shape = RoundedCornerShape(8.dp)
+                                        )
                                         .clip(RoundedCornerShape(5.dp))
-                                        .background(Color.Red)
+                                        .background(buttonColorDelete)
                                         .clickable { showResetDialog = true },
                                     contentAlignment = Alignment.Center
                                 ) {
                                     Text(
                                         text = "Reset All Data",
-                                        color = Color.White,
+                                        color = Color(0xFFF6E19F),
                                         fontWeight = FontWeight.Bold,
                                         fontSize = 15.sp
                                     )
@@ -523,13 +540,7 @@ fun SettingsScreen(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
-                            val logoRes = when (currentTheme?.id) {
-                                "dark_lime" -> Res.drawable.ic_logo_dark_lime
-                                "neon_coral" -> Res.drawable.ic_logo_neon_coral
-                                "royal_blue" -> Res.drawable.ic_logo_royal_blue
-                                "graphite_gold" -> Res.drawable.ic_logo_graphite_gold
-                                else -> Res.drawable.ic_logo_dark_lime
-                            }
+                            val logoRes = Res.drawable.ic_logo
 
                             Column(
                                 modifier = Modifier
@@ -544,15 +555,8 @@ fun SettingsScreen(
                                     painter = painterResource(logoRes),
                                     contentDescription = "App logo",
                                     modifier = Modifier
-                                        .size(70.dp)
+                                        .size(120.dp)
                                         .padding(bottom = 4.dp)
-                                )
-
-                                Text(
-                                    text = "App Version 1.1",
-                                    color = sectionContentColor,
-                                    fontSize = 15.sp,
-                                    fontWeight = FontWeight.Medium
                                 )
                             }
                         }
@@ -645,7 +649,7 @@ fun SettingsScreen(
                             ) {
                                 Text(
                                     text = "Delete",
-                                    color = Color.White,
+                                    color = Color.Black,
                                     fontSize = 16.sp,
                                     fontWeight = FontWeight.Bold
                                 )
@@ -853,11 +857,11 @@ fun DailyReminderTimePicker(
     }
 
     val gradient = when (currentTheme?.id) {
-        "dark_lime" -> listOf(Color(0xFF0F1C27), Color(0xFF1C2A3A))
-        "neon_coral" -> listOf(Color(0xFF2A0F1B), Color(0xFF431C2E))
-        "royal_blue" -> listOf(Color(0xFF112237), Color(0xFF1D3B5C))
-        "graphite_gold" -> listOf(Color(0xFF1F1E1E), Color(0xFF383737))
-        else -> listOf(Color(0xFF0F1C27), Color(0xFF1C2A3A))
+        "dark_lime" -> listOf(Color(0xFF1F2D1E), Color(0xFF334A32))
+        "neon_coral" -> listOf(Color(0xFF2A151E), Color(0xFF4B2637))
+        "royal_blue" -> listOf(Color(0xFF110E32), Color(0xFF1C193C))
+        "graphite_gold" -> listOf(Color(0xFF320F0E), Color(0xFF3C1919))
+        else -> listOf(Color(0xFF1F2D1E), Color(0xFF334A32))
     }
 
     AlertDialog(

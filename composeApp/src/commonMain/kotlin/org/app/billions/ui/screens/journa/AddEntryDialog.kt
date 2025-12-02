@@ -42,6 +42,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.text.TextStyle
@@ -59,6 +60,7 @@ import org.app.billions.ui.screens.viewModel.SplashScreenViewModel
 @Composable
 fun AddEditEntryDialog(
     editing: ActivitySample?,
+    prefill: ActivitySample?,
     typeFromViewModel: String?,
     onSave: (ActivitySample) -> Unit,
     onCancel: () -> Unit,
@@ -68,12 +70,19 @@ fun AddEditEntryDialog(
     val currentTheme = uiState.currentTheme
 
     val dialogBackgroundColor = when (currentTheme?.id) {
-        "dark_lime" -> Color(0xFF1C2A3A)
-        "neon_coral" -> Color(0xFF431C2E)
-        "royal_blue" -> Color(0xFF1D3B5C)
-        "graphite_gold" -> Color(0xFF383737)
-        else -> Color(0xFF1C2A3A)
+        "dark_lime" -> Color(0xFF2B3D29)
+        "neon_coral" -> Color(0xFF3A1F2A)
+        "royal_blue" -> Color(0xFF1A1546)
+        "graphite_gold" -> Color(0xFF451716)
+        else -> Color(0xFF2B3D29)
     }
+
+    val gradientBorder = Brush.linearGradient(
+        colors = listOf(
+            Color(0xFFF6E19F),
+            Color(0xFF90845D)
+        )
+    )
 
     val fieldBackgroundColor = when (currentTheme?.id) {
         "dark_lime" -> Color(0x80102020)
@@ -84,49 +93,64 @@ fun AddEditEntryDialog(
     }
 
     val saveButtonColor = when (currentTheme?.id) {
-        "dark_lime" -> Color(0xFFB6FE03)
-        "neon_coral" -> Color(0xFFFF2C52)
-        "royal_blue" -> Color(0xFF699BFF)
-        "graphite_gold" -> Color(0xFFFFD700)
-        else -> Color(0xFFB6FE03)
+        "dark_lime" -> Color(0xFF1F2D1E)
+        "neon_coral" -> Color(0xFF3D0C23)
+        "royal_blue" -> Color(0xFF0C0E3D)
+        "graphite_gold" -> Color(0xFF470C0C)
+        else -> Color(0xFF1F2D1E)
     }
 
-    val cancelButtonColor = Color.White
+    val cancelButtonColor = when (currentTheme?.id) {
+        "dark_lime" -> Color(0xFF334A32)
+        "neon_coral" -> Color(0xFF4B2637)
+        "royal_blue" -> Color(0xFF1C193C)
+        "graphite_gold" -> Color(0xFF3C1919)
+        else -> Color(0xFF334A32)
+    }
+
+    val accentColor = Color(0xFFF6E19F)
+
+    val initial = editing ?: prefill ?: ActivitySample(
+        id = 0L,
+        date = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()),
+        steps = 0,
+        distanceMeters = 0.0,
+        activeEnergyKcal = 0.0,
+        source = "manual",
+        note = ""
+    )
 
     var type by remember { mutableStateOf("Steps") }
 
-    LaunchedEffect(editing?.id) {
-        type =
-            if (editing == null)
-                typeFromViewModel?.replaceFirstChar { it.uppercase() } ?: "Steps"
-            else if (editing.steps > 0)
-                "Steps"
-            else if (editing.distanceMeters > 0)
-                "Distance"
-            else
-                "Calories"
+    LaunchedEffect(initial.id) {
+        type = when {
+            initial.steps > 0 -> "Steps"
+            initial.distanceMeters > 0 -> "Distance"
+            initial.activeEnergyKcal > 0 -> "Calories"
+            else -> typeFromViewModel?.replaceFirstChar { it.uppercase() } ?: "Steps"
+        }
     }
 
     var amount by remember { mutableStateOf("") }
 
-    LaunchedEffect(editing?.id) {
-        amount = editing?.let {
-            when {
-                it.steps > 0 -> it.steps.toString()
-                it.distanceMeters > 0 -> it.distanceMeters.toString()
-                else -> it.activeEnergyKcal.toString()
-            }
-        } ?: ""
+    LaunchedEffect(initial.id) {
+        amount = when {
+            initial.steps > 0 -> initial.steps.toString()
+            initial.distanceMeters > 0 -> initial.distanceMeters.toString()
+            initial.activeEnergyKcal > 0 -> initial.activeEnergyKcal.toString()
+            else -> ""
+        }
     }
 
     var note by remember { mutableStateOf("") }
 
-    LaunchedEffect(editing?.id) {
-        note = editing?.note ?: ""
+    LaunchedEffect(initial.id) {
+        note = initial.note ?: ""
     }
-    var date by remember { mutableStateOf(editing?.date ?: Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())) }
-    var error by remember { mutableStateOf<String?>(null) }
 
+    var date by remember { mutableStateOf(initial.date) }
+
+    var error by remember { mutableStateOf<String?>(null) }
 
     Box(
         modifier = Modifier
@@ -174,11 +198,11 @@ fun AddEditEntryDialog(
                                 .clip(RoundedCornerShape(10.dp))
                                 .border(
                                     width = if (isSelected) 2.dp else 1.dp,
-                                    color = if (isSelected) saveButtonColor else Color.Gray.copy(alpha = 0.5f),
+                                    color = if (isSelected) accentColor else Color.Gray.copy(alpha = 0.5f),
                                     shape = RoundedCornerShape(10.dp)
                                 )
                                 .background(
-                                    if (isSelected) saveButtonColor.copy(alpha = 0.15f)
+                                    if (isSelected) accentColor.copy(alpha = 0.15f)
                                     else Color.Transparent
                                 )
                                 .clickable { type = option }
@@ -186,13 +210,14 @@ fun AddEditEntryDialog(
                         ) {
                             Text(
                                 text = option,
-                                color = if (isSelected) saveButtonColor else Color.White,
+                                color = if (isSelected) accentColor else Color.White,
                                 fontSize = 15.sp,
                                 fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
                             )
                         }
                     }
                 }
+
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -207,8 +232,8 @@ fun AddEditEntryDialog(
                         },
                         textStyle = TextStyle(color = Color.White, fontSize = 15.sp),
                         singleLine = true,
-                        cursorBrush = SolidColor(Color.White),
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                        cursorBrush = SolidColor(Color.White),
                         decorationBox = { inner ->
                             if (amount.isEmpty()) Text("Amount", color = Color.Gray)
                             inner()
@@ -226,8 +251,8 @@ fun AddEditEntryDialog(
                         value = note,
                         onValueChange = { note = it },
                         textStyle = TextStyle(color = Color.White, fontSize = 15.sp),
-                        singleLine = true,
                         cursorBrush = SolidColor(Color.White),
+                        singleLine = true,
                         decorationBox = { inner ->
                             if (note.isEmpty()) Text("Note", color = Color.Gray)
                             inner()
@@ -250,11 +275,16 @@ fun AddEditEntryDialog(
                         onClick = onCancel,
                         modifier = Modifier
                             .height(44.dp)
-                            .width(120.dp),
+                            .width(120.dp)
+                            .border(
+                                width = 2.dp,
+                                brush = gradientBorder,
+                                shape = RoundedCornerShape(8.dp)
+                            ),
                         shape = RoundedCornerShape(8.dp),
                         colors = ButtonDefaults.buttonColors(cancelButtonColor)
                     ) {
-                        Text("Cancel", color = Color.Black, fontWeight = FontWeight.Bold)
+                        Text("Cancel", color = accentColor, fontWeight = FontWeight.Bold)
                     }
 
                     Button(
@@ -278,13 +308,18 @@ fun AddEditEntryDialog(
                         },
                         modifier = Modifier
                             .height(44.dp)
-                            .width(120.dp),
+                            .width(120.dp)
+                            .border(
+                                width = 2.dp,
+                                brush = gradientBorder,
+                                shape = RoundedCornerShape(8.dp)
+                            ),
                         shape = RoundedCornerShape(8.dp),
                         colors = ButtonDefaults.buttonColors(saveButtonColor)
                     ) {
                         Text(
                             if (editing == null) "Save" else "Update",
-                            color = Color.Black,
+                            color = accentColor,
                             fontWeight = FontWeight.Bold
                         )
                     }

@@ -52,19 +52,9 @@ import billions.composeapp.generated.resources.bg_dashboard_dark_lime
 import billions.composeapp.generated.resources.bg_dashboard_graphite_gold
 import billions.composeapp.generated.resources.bg_dashboard_neon_coral
 import billions.composeapp.generated.resources.bg_dashboard_royal_blue
-import billions.composeapp.generated.resources.ic_calories_dark_lime
-import billions.composeapp.generated.resources.ic_calories_graphite_gold
-import billions.composeapp.generated.resources.ic_calories_neon_coral
-import billions.composeapp.generated.resources.ic_calories_royal_blue
-import billions.composeapp.generated.resources.ic_distance_dark_lime
-import billions.composeapp.generated.resources.ic_distance_graphite_gold
-import billions.composeapp.generated.resources.ic_distance_neon_coral
-import billions.composeapp.generated.resources.ic_distance_royal_blue
-import billions.composeapp.generated.resources.ic_steps_dark_lime
-import billions.composeapp.generated.resources.ic_steps_graphite_gold
-import billions.composeapp.generated.resources.ic_steps_neon_coral
-import billions.composeapp.generated.resources.ic_steps_royal_blue
-import kotlinx.datetime.DatePeriod
+import billions.composeapp.generated.resources.ic_calories
+import billions.composeapp.generated.resources.ic_distance
+import billions.composeapp.generated.resources.ic_steps
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.minus
@@ -89,20 +79,14 @@ fun ComparisonScreen(
     val currentTheme = uiState.currentTheme
     val goals = viewModel.dailyGoals.value
 
-    val contentColor = when (currentTheme?.id) {
-        "dark_lime" -> Color(0xFFB6FE03)
-        "neon_coral" -> Color(0xFFFF2C52)
-        "royal_blue" -> Color(0xFF699BFF)
-        "graphite_gold" -> Color(0xFFFFD700)
-        else -> Color(0xFFB6FE03)
-    }
+    val contentColor = Color(0xFFF6E19F)
 
     val cardColor = when (currentTheme?.id) {
-        "dark_lime" -> Color(0xFF1C2A3A)
-        "neon_coral" -> Color(0xFF431C2E)
-        "royal_blue" -> Color(0xFF1D3B5C)
-        "graphite_gold" -> Color(0xFF383737)
-        else -> Color(0xFF1C2A3A)
+        "dark_lime" -> Color(0xFF334A32)
+        "neon_coral" -> Color(0xFF4B2637)
+        "royal_blue" -> Color(0xFF1C193C)
+        "graphite_gold" -> Color(0xFF3C1919)
+        else -> Color(0xFF334A32)
     }
 
     val backgroundRes = when (currentTheme?.id) {
@@ -114,11 +98,11 @@ fun ComparisonScreen(
     }
 
     val barColor = when (currentTheme?.id) {
-        "dark_lime" -> Color(0x801C2A3A)
-        "neon_coral" -> Color(0x80431C2E)
-        "royal_blue" -> Color(0x801D3B5C)
-        "graphite_gold" -> Color(0x80383737)
-        else -> Color(0x801C2A3A)
+        "dark_lime" -> Color(0xFF1F2D1E)
+        "neon_coral" -> Color(0xFF2A151E)
+        "royal_blue" -> Color(0xFF110E32)
+        "graphite_gold" -> Color(0xFF320F0E)
+        else -> Color(0xFF1F2D1E)
     }
 
     val today = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date
@@ -256,7 +240,6 @@ fun ComparisonScreen(
     }
 }
 
-
 @Composable
 private fun ComparisonDayBlock(
     label: String,
@@ -271,43 +254,26 @@ private fun ComparisonDayBlock(
     caloriesProgress: Float
 ) {
     val (stepsIcon, distanceIcon, caloriesIcon) = remember(currentTheme) {
-        when (currentTheme?.id) {
-            "dark_lime" -> Triple(
-                Res.drawable.ic_steps_dark_lime,
-                Res.drawable.ic_distance_dark_lime,
-                Res.drawable.ic_calories_dark_lime
-            )
-            "neon_coral" -> Triple(
-                Res.drawable.ic_steps_neon_coral,
-                Res.drawable.ic_distance_neon_coral,
-                Res.drawable.ic_calories_neon_coral
-            )
-            "royal_blue" -> Triple(
-                Res.drawable.ic_steps_royal_blue,
-                Res.drawable.ic_distance_royal_blue,
-                Res.drawable.ic_calories_royal_blue
-            )
-            "graphite_gold" -> Triple(
-                Res.drawable.ic_steps_graphite_gold,
-                Res.drawable.ic_distance_graphite_gold,
-                Res.drawable.ic_calories_graphite_gold
-            )
-            else -> Triple(
-                Res.drawable.ic_steps_dark_lime,
-                Res.drawable.ic_distance_dark_lime,
-                Res.drawable.ic_calories_dark_lime
-            )
-        }
+        Triple(
+            Res.drawable.ic_steps,
+            Res.drawable.ic_distance,
+            Res.drawable.ic_calories
+        )
     }
 
     val avgProgress = (stepsProgress + distanceProgress + caloriesProgress) / 3f
 
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(240.dp),
+        contentAlignment = Alignment.Center
     ) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier.align(Alignment.CenterStart)
+        ) {
             Text(label, color = Color.White, fontWeight = FontWeight.SemiBold)
             Spacer(Modifier.height(8.dp))
             Box(contentAlignment = Alignment.Center) {
@@ -316,21 +282,26 @@ private fun ComparisonDayBlock(
                     distanceProgress = distanceProgress,
                     caloriesProgress = caloriesProgress,
                     color = color,
-                    ringSize = 180.dp
+                    ringSize = 220.dp
                 )
                 Text(
                     text = "${(avgProgress * 100).toInt()}%",
                     color = Color.White,
                     fontWeight = FontWeight.Bold,
-                    fontSize = 18.sp
+                    fontSize = 20.sp
                 )
             }
         }
 
-        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            StatCard(icon = stepsIcon, value = "$steps", color = color, bg = cardColor)
-            StatCard(icon = distanceIcon, value = "${distance.toInt()} km", color = color, bg = cardColor)
-            StatCard(icon = caloriesIcon, value = "${calories.toInt()} kcal", color = color, bg = cardColor)
+        Column(
+            modifier = Modifier
+                .align(Alignment.CenterEnd)
+                .padding(end = 8.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp)
+        ) {
+            StatCard(stepsIcon, "$steps st", color, cardColor)
+            StatCard(distanceIcon, "${distance.toInt()} km", color, cardColor)
+            StatCard(caloriesIcon, "${calories.toInt()} kcal", color, cardColor)
         }
     }
 }
@@ -349,7 +320,10 @@ private fun StatCard(icon: DrawableResource, value: String, color: Color, bg: Co
             Image(
                 painter = painterResource(icon),
                 contentDescription = null,
-                modifier = Modifier.size(22.dp),
+                modifier = Modifier
+                    .size(28.dp)
+                    .align(Alignment.CenterHorizontally)
+                    .padding(top = 2.dp),
                 colorFilter = ColorFilter.tint(color)
             )
             Spacer(Modifier.height(4.dp))

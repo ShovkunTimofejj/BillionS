@@ -93,7 +93,7 @@ fun HighlightsCard(
         ) {
             Text(
                 text = "Best day this week",
-                color = contentColor,
+                color = Color.White,
                 fontSize = 18.sp,
                 fontWeight = FontWeight.SemiBold
             )

@@ -65,10 +65,10 @@ CREATE TABLE CurrentThemeEntity (
 
 INSERT INTO ThemeEntity(id, name, isPurchased, backgroundRes, logoRes, monocleRes, primaryColor, splashText)
 VALUES
-('dark_lime', 'Dark Lime', 1, 'bg_dark_lime', 'logo_dark_lime', 'monocle_dark_lime', 4278255360, 'Let’s go!'),
-('neon_coral', 'Neon Coral', 0, 'bg_neon_coral', 'logo_neon_coral', 'monocle_neon_coral', 4294936353, 'Burn bright!'),
+('dark_lime', 'Royal Green', 1, 'bg_dark_lime', 'logo_dark_lime', 'monocle_dark_lime', 4278255360, 'Let’s go!'),
+('neon_coral', 'Royal Pink', 0, 'bg_neon_coral', 'logo_neon_coral', 'monocle_neon_coral', 4294936353, 'Burn bright!'),
 ('royal_blue', 'Royal Blue', 0, 'bg_royal_blue', 'logo_royal_blue', 'monocle_royal_blue', 4283782485, 'Stay sharp!'),
-('graphite_gold', 'Graphite Gold', 0, 'bg_graphite_gold', 'logo_graphite_gold', 'monocle_graphite_gold', 4294956800, 'Shine on!');
+('graphite_gold', 'Royal Red', 0, 'bg_graphite_gold', 'logo_graphite_gold', 'monocle_graphite_gold', 4294956800, 'Shine on!');
 
 CREATE TABLE DailyGoals (
     id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
